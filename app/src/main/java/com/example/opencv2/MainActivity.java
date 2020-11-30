@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     String[] colors = {"Filter Select", "Normal", "Grey Scale", "Jet", "Ocean", "Spring", "Parula", "Cool", "Twilight"};
     int color_selected;
     int pic_taken = 0;
+    int counter = 0;
 
     Mat image;
     Mat pic_mat;
@@ -67,30 +68,33 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         filter_select.setOnItemSelectedListener(this);
 
         button1.setOnClickListener(v -> {
+            //Only triggers if a frame has been captured
+            if (counter > 0) {
+                pic_mat = image;
+                pic_taken = 1;
+                //Covert to correct typing
+                if ((pic_mat.type() != CvType.CV_8UC4) && (pic_mat.type() != CvType.CV_8UC1) && (pic_mat.type() != CvType.CV_8UC4)) {
+                    pic_mat.convertTo(pic_mat, CvType.CV_8UC4);
+                }
 
-            pic_mat = image;
-            //Covert to correct typing
-            if ((pic_mat.type() != CvType.CV_8UC4) && (pic_mat.type() != CvType.CV_8UC1) && (pic_mat.type() != CvType.CV_8UC4)) {
-                pic_mat.convertTo(pic_mat, CvType.CV_8UC4);
+
+                //Convert the mat to a bitmap
+                picture = Bitmap.createBitmap(pic_mat.rows(), pic_mat.cols(), Bitmap.Config.ARGB_8888);
+                //Need to rotate the bitmap 90 degrees to match the orientation of the mat.
+                Matrix matrix = new Matrix();
+                matrix.postRotate(90);
+                picture = Bitmap.createBitmap(picture, 0, 0, picture.getWidth(), picture.getHeight(), matrix, true);
+                Utils.matToBitmap(pic_mat, picture);
+
+                //Can rotate 90 again to restore back to regular orientation
+                picture = Bitmap.createBitmap(picture, 0, 0, picture.getWidth(), picture.getHeight(), matrix, true);
+
+                //Store the bitmap in the image gallery
+                MediaStore.Images.Media.insertImage(getContentResolver(), picture, "Picture", "Picture");
+
+                //Code to call a new activity
+                openNewActivity();
             }
-
-            //Convert the mat to a bitmap
-            picture = Bitmap.createBitmap(pic_mat.rows(), pic_mat.cols(), Bitmap.Config.ARGB_8888);
-
-            //Need to rotate the bitmap 90 degrees to match the orientation of the mat.
-            Matrix matrix = new Matrix();
-            matrix.postRotate(90);
-            picture = Bitmap.createBitmap(picture, 0, 0, picture.getWidth(), picture.getHeight(), matrix, true);
-            Utils.matToBitmap(pic_mat, picture);
-
-            //Can rotate 90 again to restore back to regular orientation
-            picture = Bitmap.createBitmap(picture, 0, 0, picture.getWidth(), picture.getHeight(), matrix, true);
-
-            //Store the bitmap in the image gallery
-            MediaStore.Images.Media.insertImage(getContentResolver(), picture, "Picture", "Picture");
-
-            //Code to call a new activity
-            openNewActivity();
         });
 
         cameraBridgeViewBase = (JavaCameraView) findViewById(R.id.CameraView);
@@ -121,36 +125,41 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         image = inputFrame.rgba();
-        switch (color_selected) {
-            default:
-                return image;
-            case 2:
-                Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2GRAY);
-                return image;
-            case 3:
-                Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
-                Imgproc.applyColorMap(image, image, Imgproc.COLORMAP_JET);
-                return image;
-            case 4:
-                Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
-                Imgproc.applyColorMap(image, image, Imgproc.COLORMAP_OCEAN);
-                return image;
-            case 5:
-                Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
-                Imgproc.applyColorMap(image, image, Imgproc.COLORMAP_SPRING);
-                return image;
-            case 6:
-                Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
-                Imgproc.applyColorMap(image, image, Imgproc.COLORMAP_PARULA);
-                return image;
-            case 7:
-                Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
-                Imgproc.applyColorMap(image, image, Imgproc.COLORMAP_COOL);
-                return image;
-            case 8:
-                Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
-                Imgproc.applyColorMap(image, image, Imgproc.COLORMAP_TWILIGHT);
-                return image;
+        counter++;
+        if (pic_taken == 0) {
+            switch (color_selected) {
+                default:
+                    return image;
+                case 2:
+                    Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2GRAY);
+                    return image;
+                case 3:
+                    Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
+                    Imgproc.applyColorMap(image, image, Imgproc.COLORMAP_JET);
+                    return image;
+                case 4:
+                    Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
+                    Imgproc.applyColorMap(image, image, Imgproc.COLORMAP_OCEAN);
+                    return image;
+                case 5:
+                    Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
+                    Imgproc.applyColorMap(image, image, Imgproc.COLORMAP_SPRING);
+                    return image;
+                case 6:
+                    Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
+                    Imgproc.applyColorMap(image, image, Imgproc.COLORMAP_PARULA);
+                    return image;
+                case 7:
+                    Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
+                    Imgproc.applyColorMap(image, image, Imgproc.COLORMAP_COOL);
+                    return image;
+                case 8:
+                    Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
+                    Imgproc.applyColorMap(image, image, Imgproc.COLORMAP_TWILIGHT);
+                    return image;
+            }
+        } else {
+            return pic_mat;
         }
     }
 
@@ -159,6 +168,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     protected void onResume() {
         super.onResume();
         pic_taken = 0;
+        counter = 0;
         if (!OpenCVLoader.initDebug()) {
             Toast.makeText(getApplicationContext(), "There's a problem", Toast.LENGTH_SHORT).show();
         } else {
@@ -170,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     protected void onPause() {
         super.onPause();
         pic_taken = 0;
+        counter = 0;
         if (cameraBridgeViewBase != null) {
             cameraBridgeViewBase.disableView();
         }
