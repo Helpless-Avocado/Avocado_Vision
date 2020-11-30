@@ -30,7 +30,7 @@ public class MainActivity2 extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        Button go_back = (Button) findViewById(R.id.button);
+        Button go_back = findViewById(R.id.button);
 
         ImageView view1;
         view1 = findViewById(R.id.imageView1);

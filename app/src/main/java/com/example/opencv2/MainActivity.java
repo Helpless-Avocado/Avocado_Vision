@@ -57,10 +57,10 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         checkPermission(Manifest.permission.CAMERA, Camera_Perms);
         checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, Storage_Perms);
 
-        Button button1 = (Button) findViewById(R.id.Picture);
+        Button button1 = findViewById(R.id.Picture);
 
         //Code for the Dropdown
-        Spinner filter_select = (Spinner) findViewById(R.id.spinner);
+        Spinner filter_select = findViewById(R.id.spinner);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, colors);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         filter_select.setAdapter(adapter);

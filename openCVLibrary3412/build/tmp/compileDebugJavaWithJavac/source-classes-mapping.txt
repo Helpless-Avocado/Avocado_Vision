@@ -25,8 +25,6 @@ org/opencv/features2d/MSER.java
  org.opencv.features2d.MSER
 org/opencv/ml/TrainData.java
  org.opencv.ml.TrainData
-org/opencv/features2d/FeatureDetector.java
- org.opencv.features2d.FeatureDetector
 org/opencv/core/CvType.java
  org.opencv.core.CvType
 org/opencv/objdetect/CascadeClassifier.java
@@ -231,8 +229,6 @@ org/opencv/features2d/AKAZE.java
  org.opencv.features2d.AKAZE
 org/opencv/photo/TonemapReinhard.java
  org.opencv.photo.TonemapReinhard
-org/opencv/features2d/DescriptorExtractor.java
- org.opencv.features2d.DescriptorExtractor
 org/opencv/video/BackgroundSubtractorKNN.java
  org.opencv.video.BackgroundSubtractorKNN
 org/opencv/photo/MergeMertens.java
@@ -244,10 +240,10 @@ org/opencv/video/SparseOpticalFlow.java
 org/opencv/android/AsyncServiceHelper.java
  org.opencv.android.AsyncServiceHelper
  org.opencv.android.AsyncServiceHelper$1
+ org.opencv.android.AsyncServiceHelper$1$1
+ org.opencv.android.AsyncServiceHelper$1$2
  org.opencv.android.AsyncServiceHelper$2
  org.opencv.android.AsyncServiceHelper$3
- org.opencv.android.AsyncServiceHelper$3$1
- org.opencv.android.AsyncServiceHelper$3$2
 org/opencv/core/Rect.java
  org.opencv.core.Rect
 org/opencv/ml/LogisticRegression.java
