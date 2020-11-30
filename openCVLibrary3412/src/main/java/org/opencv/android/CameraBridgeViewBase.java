@@ -345,7 +345,6 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
             }
         }
     }
-
     /**
      * This method is invoked shall perform concrete operation to initialize the camera.
      * CONTRACT: as a result of this method variables mFrameWidth and mFrameHeight MUST be
@@ -391,8 +390,8 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
 
             if (width <= maxAllowedWidth && height <= maxAllowedHeight) {
                 if (width >= calcWidth && height >= calcHeight) {
-                    calcWidth = (int) width;
-                    calcHeight = (int) height;
+                    calcWidth = width;
+                    calcHeight = height;
                 }
             }
         }
