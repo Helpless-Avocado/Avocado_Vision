@@ -70,8 +70,10 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         button1.setOnClickListener(v -> {
             //Only triggers if a frame has been captured
             if (counter > 0) {
+                //Updates images and stops the feed
                 pic_mat = image;
                 pic_taken = 1;
+
                 //Covert to correct typing
                 if ((pic_mat.type() != CvType.CV_8UC4) && (pic_mat.type() != CvType.CV_8UC1) && (pic_mat.type() != CvType.CV_8UC4)) {
                     pic_mat.convertTo(pic_mat, CvType.CV_8UC4);
@@ -80,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
                 //Convert the mat to a bitmap
                 picture = Bitmap.createBitmap(pic_mat.rows(), pic_mat.cols(), Bitmap.Config.ARGB_8888);
+
                 //Need to rotate the bitmap 90 degrees to match the orientation of the mat.
                 Matrix matrix = new Matrix();
                 matrix.postRotate(90);

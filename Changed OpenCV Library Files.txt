@@ -1,0 +1,5 @@
+Changed External Library Code:
+
+Altered OpenCV code libraries JavaCameraView.java and CameraBridgeViewBase.java with code that changed the input frames
+from a landscape orientation to a portrait orientation that is scaled to fit the phone screens width.
+
