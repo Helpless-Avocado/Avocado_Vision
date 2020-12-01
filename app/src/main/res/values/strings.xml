@@ -5,4 +5,5 @@
     <string name="welcome_new">Welcome to New Activity</string>
     <string name="img_desc">Image to be Filtered</string>
     <string name="picture">Picture</string>
+    <string name="save">Save</string>
 </resources>

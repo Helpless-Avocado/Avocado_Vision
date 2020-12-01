@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.AdapterView;
@@ -36,7 +35,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private static final int Camera_Perms = 100;
     private static final int Storage_Perms = 101;
 
-
     String[] colors = {"Filter Select", "Normal", "Grey Scale", "Jet", "Ocean", "Spring", "Parula", "Cool", "Twilight"};
     int color_selected;
     int pic_taken = 0;
@@ -56,7 +54,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         //Checking if Permissions are granted
         checkPermission(Manifest.permission.CAMERA, Camera_Perms);
-        checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, Storage_Perms);
 
         Button button1 = findViewById(R.id.Picture);
 
@@ -68,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         filter_select.setOnItemSelectedListener(this);
 
         button1.setOnClickListener(v -> {
+            checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, Storage_Perms);
             //Only triggers if a frame has been captured
             if (counter > 0) {
                 //Updates images and stops the feed
@@ -78,7 +76,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 if ((pic_mat.type() != CvType.CV_8UC4) && (pic_mat.type() != CvType.CV_8UC1) && (pic_mat.type() != CvType.CV_8UC4)) {
                     pic_mat.convertTo(pic_mat, CvType.CV_8UC4);
                 }
-
 
                 //Convert the mat to a bitmap
                 picture = Bitmap.createBitmap(pic_mat.rows(), pic_mat.cols(), Bitmap.Config.ARGB_8888);
@@ -92,10 +89,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 //Can rotate 90 again to restore back to regular orientation
                 picture = Bitmap.createBitmap(picture, 0, 0, picture.getWidth(), picture.getHeight(), matrix, true);
 
-                //Store the bitmap in the image gallery
-                MediaStore.Images.Media.insertImage(getContentResolver(), picture, "Picture", "Picture");
-
-                //Code to call a new activity
+                //Code to call a new activity which will send the bitmap over
                 openNewActivity();
             }
         });
