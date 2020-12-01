@@ -56,7 +56,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // updated continuously as the user slides the thumb
             filter_strength = progress;
-            progresslabel.setText("Progress: " + (progress - 50));
+            progresslabel.setText("Strength: " + (progress - 50));
 
         }
 
