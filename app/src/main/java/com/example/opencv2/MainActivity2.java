@@ -73,14 +73,10 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
             nowval = filter_strength;
             if (nowval != lastval) {
                 switch (filter_pos) {
-                    case 0:
+                    default:
                         break;
                     case 1:
                         finalImage = pixelate(inputimage, filter_strength);
-                        break;
-                    case 2:
-                        //scale red
-                        finalImage = colorscale(inputimage, filter_strength, 1);
                         break;
                     case 3:
                         //Brighten/Darken
@@ -112,9 +108,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         public void onStopTrackingTouch(SeekBar seekBar) {
             nowval = redstrength;
             if (nowval != lastval) {
-                Composite = colorscale(inputimage, redstrength, 1);
-                Composite = colorscale(Composite, greenstrength, 2);
-                finalImage = colorscale(Composite, bluestrength, 3);
+                finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
                 view1.setImageBitmap(finalImage);
             }
         }
@@ -140,9 +134,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         public void onStopTrackingTouch(SeekBar seekBar) {
             nowval = greenstrength;
             if (nowval != lastval) {
-                Composite = colorscale(inputimage, redstrength, 1);
-                Composite = colorscale(Composite, greenstrength, 2);
-                finalImage = colorscale(Composite, bluestrength, 3);
+                finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
                 view1.setImageBitmap(finalImage);
             }
         }
@@ -168,9 +160,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         public void onStopTrackingTouch(SeekBar seekBar) {
             nowval = bluestrength;
             if (nowval != lastval) {
-                Composite = colorscale(inputimage, redstrength, 1);
-                Composite = colorscale(Composite, greenstrength, 2);
-                finalImage = colorscale(Composite, bluestrength, 3);
+                finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
                 view1.setImageBitmap(finalImage);
             }
         }
@@ -189,14 +179,16 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
     }
 
     //Filter Code to scale the red value
-    public static Bitmap colorscale(Bitmap orig, int value, int color) {
+    public static Bitmap colorscale(Bitmap orig, int rvalue, int gvalue, int bvalue) {
         //Get Size of the bitmap that is being altered
         int width = orig.getWidth();
         int height = orig.getHeight();
         Bitmap newbit = Bitmap.createBitmap(width, height, orig.getConfig());
 
         //Scale factor, with 100 set to normal
-        float scale = (float) (value / 100);
+        float rscale = (float) (rvalue / 100);
+        float gscale = (float) (gvalue / 100);
+        float bscale = (float) (bvalue / 100);
 
         //Go pixel by pixel to get original color information
         int r, g, b, a;
@@ -206,43 +198,26 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                 //Get values of R from bitmap
                 pixvalue = orig.getPixel(i, j);
                 a = Color.alpha(pixvalue);
-                r = Color.red(pixvalue);
-                b = Color.blue(pixvalue);
-                g = Color.green(pixvalue);
+                r = (int) (rscale * Color.red(pixvalue));
+                b = (int) (bscale * Color.blue(pixvalue));
+                g = (int) (gscale * Color.green(pixvalue));
+                //Now control the color based on pixel bounds
+                if (r > 255) {
+                    r = 255;
+                } else if (r < 0) {
+                    r = 0;
+                }
 
-                //Now scale the based on input color
-                switch (color) {
-                    case 1: // Red Scaling
-                    {
-                        r = (int) (r * scale);
-                        if (r > 255) {
-                            r = 255;
-                        } else if (r < 0) {
-                            r = 0;
-                        }
-                        break;
-                    }
-                    case 2: // Green Scaling
-                    {
-                        g = (int) (g * scale);
-                        if (g > 255) {
-                            g = 255;
-                        } else if (g < 0) {
-                            g = 0;
-                        }
-                        break;
-                    }
+                if (g > 255) {
+                    g = 255;
+                } else if (g < 0) {
+                    g = 0;
+                }
 
-                    case 3: // Blue Scaling
-                    {
-                        b = (int) (b * scale);
-                        if (b > 255) {
-                            b = 255;
-                        } else if (b < 0) {
-                            b = 0;
-                        }
-                        break;
-                    }
+                if (b > 255) {
+                    b = 255;
+                } else if (b < 0) {
+                    b = 0;
                 }
                 // apply new pixel color to output bitmap
                 newbit.setPixel(i, j, Color.argb(a, r, g, b));
