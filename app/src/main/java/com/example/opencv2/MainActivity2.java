@@ -30,67 +30,179 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity2 extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
-    String[] filternames = {"Original", "Filter1", "Scale Red", "Brightness"};
-    int filter_pos, filter_strength;
+    String[] filternames = {"Original", "Pixelate", "Scale Red", "Brightness"};
+    int filter_pos, filter_strength, redstrength, bluestrength, greenstrength;
     Bitmap Image = null;
     Bitmap finalImage = null;
     Bitmap inputimage = null;
     ImageView view1;
     TextView progresslabel;
     SeekBar strength;
+    SeekBar Red, Green, Blue;
+    TextView rlabel, blabel, glabel;
+    Bitmap Composite;
+    //Code that controls the sliders
+    SeekBar.OnSeekBarChangeListener strengthListener = new SeekBar.OnSeekBarChangeListener() {
 
-    //Code that controls the slider
-    SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
+        int nowval, lastval;
 
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // updated continuously as the user slides the thumb
-            filter_strength = progress;
-            progresslabel.setText("Strength: " + (progress - 50));
-
+            switch (filter_pos) {
+                case 1:
+                    progresslabel.setText("Pixelation Factor: " + (progress + 1));
+                    filter_strength = progress + 1;
+                    break;
+                case 3:
+                    progresslabel.setText("Brightness: " + (progress - 100));
+                    filter_strength = progress;
+                    break;
+            }
         }
 
         @Override
         public void onStartTrackingTouch(SeekBar seekBar) {
             // called when the user first touches the SeekBar
+            lastval = filter_strength;
         }
 
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
             // called after the user finishes moving the SeekBar
-            switch (filter_pos) {
-                case 0:
-                    break;
-                case 1:
-                    break;
-                case 2:
-                    //scale red
-                    finalImage = redscale(inputimage, filter_strength);
-                    break;
-                case 3:
-                    //Brighten/Darken
-                    finalImage = brightness(inputimage, filter_strength);
-                    break;
+            nowval = filter_strength;
+            if (nowval != lastval) {
+                switch (filter_pos) {
+                    case 0:
+                        break;
+                    case 1:
+                        finalImage = pixelate(inputimage, filter_strength);
+                        break;
+                    case 2:
+                        //scale red
+                        finalImage = colorscale(inputimage, filter_strength, 1);
+                        break;
+                    case 3:
+                        //Brighten/Darken
+                        finalImage = brightness(inputimage, filter_strength);
+                        break;
+                }
+                view1.setImageBitmap(finalImage);
             }
-            view1.setImageBitmap(finalImage);
+        }
+    };
+    SeekBar.OnSeekBarChangeListener redListener = new SeekBar.OnSeekBarChangeListener() {
+
+        int nowval, lastval;
+
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            // updated continuously as the user slides the thumb
+            redstrength = progress;
+            rlabel.setText("Red : " + (progress) + "%");
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+            // called when the user first touches the SeekBar
+            lastval = redstrength;
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            nowval = redstrength;
+            if (nowval != lastval) {
+                Composite = colorscale(inputimage, redstrength, 1);
+                Composite = colorscale(Composite, greenstrength, 2);
+                finalImage = colorscale(Composite, bluestrength, 3);
+                view1.setImageBitmap(finalImage);
+            }
+        }
+    };
+    SeekBar.OnSeekBarChangeListener greenListener = new SeekBar.OnSeekBarChangeListener() {
+
+        int nowval, lastval;
+
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            // updated continuously as the user slides the thumb
+            greenstrength = progress;
+            glabel.setText("Green: " + (progress) + "%");
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+            // called when the user first touches the
+            lastval = greenstrength;
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            nowval = greenstrength;
+            if (nowval != lastval) {
+                Composite = colorscale(inputimage, redstrength, 1);
+                Composite = colorscale(Composite, greenstrength, 2);
+                finalImage = colorscale(Composite, bluestrength, 3);
+                view1.setImageBitmap(finalImage);
+            }
+        }
+    };
+    SeekBar.OnSeekBarChangeListener blueListener = new SeekBar.OnSeekBarChangeListener() {
+
+        int nowval, lastval;
+
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            // updated continuously as the user slides the thumb
+            bluestrength = progress;
+            blabel.setText("Blue %: " + (progress) + "%");
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+            // called when the user first touches the SeekBar
+            lastval = bluestrength;
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            nowval = bluestrength;
+            if (nowval != lastval) {
+                Composite = colorscale(inputimage, redstrength, 1);
+                Composite = colorscale(Composite, greenstrength, 2);
+                finalImage = colorscale(Composite, bluestrength, 3);
+                view1.setImageBitmap(finalImage);
+            }
         }
     };
 
+    //Code to save the image to the gallery
+    public static void addImageToGallery(final String filePath, final Context context) {
+
+        ContentValues values = new ContentValues();
+
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+        values.put(MediaStore.MediaColumns.DATA, filePath);
+
+        context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+    }
+
     //Filter Code to scale the red value
-    public static Bitmap redscale(Bitmap orig, int value) {
+    public static Bitmap colorscale(Bitmap orig, int value, int color) {
         //Get Size of the bitmap that is being altered
         int width = orig.getWidth();
         int height = orig.getHeight();
         Bitmap newbit = Bitmap.createBitmap(width, height, orig.getConfig());
 
-        //Scale factor, with 50 set to normal
-        float scale = (float) value / 50;
+        //Scale factor, with 100 set to normal
+        float scale = (float) (value / 100);
 
         //Go pixel by pixel to get original color information
         int r, g, b, a;
         int pixvalue;
         for (int i = 0; i < width; i++) {
-            for (int j = 0; j < width; j++) {
+            for (int j = 0; j < height; j++) {
                 //Get values of R from bitmap
                 pixvalue = orig.getPixel(i, j);
                 a = Color.alpha(pixvalue);
@@ -98,16 +210,76 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                 b = Color.blue(pixvalue);
                 g = Color.green(pixvalue);
 
-                //Now scale the value of red;
-                r = (int) (r * scale);
-                if (r > 255) {
-                    r = 255;
-                } else if (r < 0) {
-                    r = 0;
-                }
+                //Now scale the based on input color
+                switch (color) {
+                    case 1: // Red Scaling
+                    {
+                        r = (int) (r * scale);
+                        if (r > 255) {
+                            r = 255;
+                        } else if (r < 0) {
+                            r = 0;
+                        }
+                        break;
+                    }
+                    case 2: // Green Scaling
+                    {
+                        g = (int) (g * scale);
+                        if (g > 255) {
+                            g = 255;
+                        } else if (g < 0) {
+                            g = 0;
+                        }
+                        break;
+                    }
 
+                    case 3: // Blue Scaling
+                    {
+                        b = (int) (b * scale);
+                        if (b > 255) {
+                            b = 255;
+                        } else if (b < 0) {
+                            b = 0;
+                        }
+                        break;
+                    }
+                }
                 // apply new pixel color to output bitmap
                 newbit.setPixel(i, j, Color.argb(a, r, g, b));
+            }
+        }
+        return newbit;
+    }
+
+    //Code to adjust the image brightness
+    public static Bitmap pixelate(Bitmap orig, int input) {
+
+        //Get Size of the bitmap that is being altered
+        int width = orig.getWidth();
+        int height = orig.getHeight();
+        Bitmap newbit = Bitmap.createBitmap(width, height, orig.getConfig());
+
+
+        //Go get center pixel for pixelation
+        int pixvalue;
+
+        for (int i = 0; i < width; i = i + input) {
+            for (int j = 0; j < height; j = j + input) {
+
+                //Get values of RGBA from bitmap pixel that will be expanded
+                pixvalue = orig.getPixel(i, j);
+
+                //Now loop that will fill out the pixel to extents
+                for (int k = 0; k < input; k++) {
+                    for (int l = 0; l < input; l++) {
+
+                        if ((i + k) >= width || (j + l) >= height) {
+                            //Do nothing
+                        } else {
+                            newbit.setPixel((i + k), (j + l), pixvalue);
+                        }
+                    }
+                }
             }
         }
         return newbit;
@@ -120,13 +292,14 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         int height = orig.getHeight();
         Bitmap newbit = Bitmap.createBitmap(width, height, orig.getConfig());
 
-        //Adjust brightness/darkening against 50
-        int value = input - 50;
+        //Adjust brightness/darkening against base value 100
+        int value = input - 100;
+
         //Go pixel by pixel to get original color information
         int r, g, b, a;
         int pixvalue;
         for (int i = 0; i < width; i++) {
-            for (int j = 0; j < width; j++) {
+            for (int j = 0; j < height; j++) {
                 //Get values of RGBA from bitmap
                 pixvalue = orig.getPixel(i, j);
                 a = Color.alpha(pixvalue);
@@ -163,16 +336,8 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         return newbit;
     }
 
-    //Code to save the image to the gallery
-    public static void addImageToGallery(final String filePath, final Context context) {
-
-        ContentValues values = new ContentValues();
-
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
-        values.put(MediaStore.MediaColumns.DATA, filePath);
-
-        context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
     }
 
     @Override
@@ -203,12 +368,31 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         view1 = findViewById(R.id.imageView1);
         view1.setImageBitmap(finalImage);
 
-        // Setting up the progress bar and text message of it
+        // Setting up the progress bar and text message of it, hiding them all until ready
         strength = findViewById(R.id.strength);
-        strength.setOnSeekBarChangeListener(seekBarChangeListener);
-        int strengthvalue = strength.getProgress();
+        strength.setOnSeekBarChangeListener(strengthListener);
+        strength.setVisibility(View.INVISIBLE);
         progresslabel = findViewById(R.id.progress_label);
-        progresslabel.setText("Strength: " + strengthvalue);
+        progresslabel.setVisibility(View.INVISIBLE);
+
+        // Setting up the RGB bars and text messages of it
+        Red = findViewById(R.id.redBar);
+        Red.setOnSeekBarChangeListener(redListener);
+        Red.setVisibility(View.INVISIBLE);
+        rlabel = findViewById(R.id.redText);
+        rlabel.setVisibility(View.INVISIBLE);
+
+        Green = findViewById(R.id.greenBar);
+        Green.setOnSeekBarChangeListener(greenListener);
+        Green.setVisibility(View.INVISIBLE);
+        glabel = findViewById(R.id.greenText);
+        glabel.setVisibility(View.INVISIBLE);
+
+        Blue = findViewById(R.id.blueBar);
+        Blue.setOnSeekBarChangeListener(blueListener);
+        Blue.setVisibility(View.INVISIBLE);
+        blabel = findViewById(R.id.blueText);
+        blabel.setVisibility(View.INVISIBLE);
 
         // Set up on Click Listeners for the Buttons
         Button go_back = findViewById(R.id.button);
@@ -260,29 +444,73 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
     //Code for telling which input the spinner has selected
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        strength.setProgress(50);
         inputimage = finalImage;
         filter_pos = position;
         switch (filter_pos) {
             case 0:
-                //Original
+                //Original image, hides all bars and text
+                progresslabel.setVisibility(View.INVISIBLE);
+                strength.setVisibility(View.INVISIBLE);
+                rlabel.setVisibility((View.INVISIBLE));
+                glabel.setVisibility((View.INVISIBLE));
+                blabel.setVisibility((View.INVISIBLE));
+                Red.setVisibility((View.INVISIBLE));
+                Green.setVisibility((View.INVISIBLE));
+                Blue.setVisibility((View.INVISIBLE));
                 finalImage = Image;
                 break;
             case 1:
+                progresslabel.setVisibility(View.VISIBLE);
+                strength.setVisibility(View.VISIBLE);
+                rlabel.setVisibility((View.INVISIBLE));
+                glabel.setVisibility((View.INVISIBLE));
+                blabel.setVisibility((View.INVISIBLE));
+                Red.setVisibility((View.INVISIBLE));
+                Green.setVisibility((View.INVISIBLE));
+                Blue.setVisibility((View.INVISIBLE));
+                progresslabel.setText("Pixelation Factor: 1");
+                strength.setMax(19);
+                strength.setProgress(0);
                 break;
             case 2:
-                //scale red
-                finalImage = redscale(inputimage, filter_strength);
+                //scale color
+                progresslabel.setVisibility(View.INVISIBLE);
+                strength.setVisibility(View.INVISIBLE);
+                rlabel.setVisibility((View.VISIBLE));
+                glabel.setVisibility((View.VISIBLE));
+                blabel.setVisibility((View.VISIBLE));
+                Red.setVisibility((View.VISIBLE));
+                Green.setVisibility((View.VISIBLE));
+                Blue.setVisibility((View.VISIBLE));
+
+                rlabel.setText("Red: 100%");
+                glabel.setText("Green: 100%");
+                blabel.setText("Blue: 100%");
+
+                Red.setMax(200);
+                Red.setProgress(100);
+
+                Green.setMax(200);
+                Green.setProgress(100);
+
+                Blue.setMax(200);
+                Blue.setProgress(100);
+
                 break;
             case 3:
                 //Brighten/Darken
-                finalImage = brightness(inputimage, filter_strength);
+                progresslabel.setVisibility(View.VISIBLE);
+                strength.setVisibility(View.VISIBLE);
+                rlabel.setVisibility((View.INVISIBLE));
+                glabel.setVisibility((View.INVISIBLE));
+                blabel.setVisibility((View.INVISIBLE));
+                Red.setVisibility((View.INVISIBLE));
+                Green.setVisibility((View.INVISIBLE));
+                Blue.setVisibility((View.INVISIBLE));
+                progresslabel.setText("Brightness: 0");
+                strength.setMax(200);
+                strength.setProgress(100);
                 break;
         }
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-
     }
 }
