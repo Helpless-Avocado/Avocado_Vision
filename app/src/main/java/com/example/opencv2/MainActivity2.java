@@ -39,17 +39,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
     TextView progresslabel;
     SeekBar strength;
 
-    public static void addImageToGallery(final String filePath, final Context context) {
-
-        ContentValues values = new ContentValues();
-
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
-        values.put(MediaStore.MediaColumns.DATA, filePath);
-
-        context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
-    }
-
+    //Code that controls the slider
     SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
 
         @Override
@@ -70,8 +60,6 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
             // called after the user finishes moving the SeekBar
             switch (filter_pos) {
                 case 0:
-                    //Original
-                    finalImage = Image;
                     break;
                 case 1:
                     break;
@@ -88,6 +76,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         }
     };
 
+    //Filter Code to scale the red value
     public static Bitmap redscale(Bitmap orig, int value) {
         //Get Size of the bitmap that is being altered
         int width = orig.getWidth();
@@ -124,6 +113,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         return newbit;
     }
 
+    //Code to adjust the image brightness
     public static Bitmap brightness(Bitmap orig, int input) {
         //Get Size of the bitmap that is being altered
         int width = orig.getWidth();
@@ -173,6 +163,18 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         return newbit;
     }
 
+    //Code to save the image to the gallery
+    public static void addImageToGallery(final String filePath, final Context context) {
+
+        ContentValues values = new ContentValues();
+
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+        values.put(MediaStore.MediaColumns.DATA, filePath);
+
+        context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -212,11 +214,13 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         Button go_back = findViewById(R.id.button);
         Button save = findViewById(R.id.save_button);
 
+        //Code that will return to the camera/ picture page
         go_back.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity2.this, MainActivity.class);
             startActivity(intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
         });
 
+        //Code that saves the image to the file, and adds it to the picture gallery.
         save.setOnClickListener(v -> {
             //Store the bitmap in the image gallery
             OutputStream output;
@@ -253,6 +257,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
 
     }
 
+    //Code for telling which input the spinner has selected
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         strength.setProgress(50);

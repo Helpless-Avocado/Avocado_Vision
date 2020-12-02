@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         //Checking if Permissions are granted
         checkPermission(Manifest.permission.CAMERA, Camera_Perms);
 
-        Button button1 = findViewById(R.id.Picture);
+        Button takepic = findViewById(R.id.Picture);
 
         //Code for the Dropdown
         Spinner filter_select = findViewById(R.id.spinner);
@@ -64,7 +64,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         filter_select.setAdapter(adapter);
         filter_select.setOnItemSelectedListener(this);
 
-        button1.setOnClickListener(v -> {
+        //Code to set up camera start
+        cameraBridgeViewBase = (JavaCameraView) findViewById(R.id.CameraView);
+        cameraBridgeViewBase.setVisibility(SurfaceView.VISIBLE);
+        cameraBridgeViewBase.setCvCameraViewListener(this);
+
+        takepic.setOnClickListener(v -> {
             checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, Storage_Perms);
             //Only triggers if a frame has been captured
             if (counter > 0) {
@@ -93,10 +98,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 openNewActivity();
             }
         });
-
-        cameraBridgeViewBase = (JavaCameraView) findViewById(R.id.CameraView);
-        cameraBridgeViewBase.setVisibility(SurfaceView.VISIBLE);
-        cameraBridgeViewBase.setCvCameraViewListener(this);
 
         baseLoaderCallback = new BaseLoaderCallback(this) {
             @Override
