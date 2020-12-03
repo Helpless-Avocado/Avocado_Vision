@@ -1,5 +1,6 @@
 package com.example.opencv2;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +20,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.opencv.android.Utils;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -29,8 +36,7 @@ import java.util.Date;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity2 extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
-
-    String[] filternames = {"Original", "Pixelate", "Scale Red", "Brightness"};
+    String[] filternames = {"Original", "Pixelate", "RGB Manipulation", "Brightness", "Expansion", "Dilate", "Blur", "Low Pass", "High Pass", "Rift", "Phase"};
     int filter_pos, filter_strength, redstrength, bluestrength, greenstrength;
     Bitmap Image = null;
     Bitmap finalImage = null;
@@ -40,24 +46,65 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
     SeekBar strength;
     SeekBar Red, Green, Blue;
     TextView rlabel, blabel, glabel;
-    Bitmap Composite;
+    Mat OpenCVFrame;
+    Mat ToScreen;
+    Mat kernel;
+
     //Code that controls the sliders
     SeekBar.OnSeekBarChangeListener strengthListener = new SeekBar.OnSeekBarChangeListener() {
 
         int nowval, lastval;
 
+        @SuppressLint("SetTextI18n")
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // updated continuously as the user slides the thumb
             switch (filter_pos) {
-                case 1:
+                case 1: {
                     progresslabel.setText("Pixelation Factor: " + (progress + 1));
                     filter_strength = progress + 1;
                     break;
-                case 3:
+                }
+                case 3: {
                     progresslabel.setText("Brightness: " + (progress - 100));
                     filter_strength = progress;
                     break;
+                }
+                case 4: {
+                    progresslabel.setText("Expansion Factor: " + (progress + 1));
+                    filter_strength = progress + 1;
+                    break;
+                }
+                case 5: {
+                    progresslabel.setText("Dilation Factor: " + (progress + 1));
+                    filter_strength = progress + 1;
+                    break;
+                }
+                case 6: {
+                    progresslabel.setText("Blur Strength: " + (progress));
+                    filter_strength = progress + 1;
+                    break;
+                }
+                case 7: {
+                    progresslabel.setText("Low Pass Strength: " + (progress + 10));
+                    filter_strength = progress + 10;
+                    break;
+                }
+                case 8: {
+                    progresslabel.setText("High Pass Strength: " + (progress + 10));
+                    filter_strength = progress + 10;
+                    break;
+                }
+                case 9: {
+                    progresslabel.setText("Rift: " + (progress + 1));
+                    filter_strength = progress + 1;
+                    break;
+                }
+                case 10: {
+                    progresslabel.setText("Phase Factor: " + (progress));
+                    filter_strength = progress;
+                    break;
+                }
             }
         }
 
@@ -75,13 +122,52 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                 switch (filter_pos) {
                     default:
                         break;
-                    case 1:
+                    case 1: {
                         finalImage = pixelate(inputimage, filter_strength);
                         break;
-                    case 3:
+                    }
+                    case 3: {
                         //Brighten/Darken
                         finalImage = brightness(inputimage, filter_strength);
                         break;
+                    }
+                    case 4: {
+                        kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
+                        Imgproc.erode(OpenCVFrame, ToScreen, kernel);
+                        Utils.matToBitmap(ToScreen, finalImage);
+                        break;
+                    }
+                    case 5: {
+                        kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
+                        Imgproc.dilate(OpenCVFrame, ToScreen, kernel);
+                        Utils.matToBitmap(ToScreen, finalImage);
+                        break;
+                    }
+                    case 6: {
+                        Imgproc.blur(OpenCVFrame, ToScreen, new Size(filter_strength, filter_strength));
+                        Utils.matToBitmap(ToScreen, finalImage);
+                        break;
+                    }
+                    case 7: {
+                        //Low Pass Filter. Input is OpenCVFrame and output should be ToScreen
+                        Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
+                        break;
+                    }
+                    case 8: {
+                        //High Pass Filter. Input is OpenCVFrame and output should be ToScreen
+                        Toast.makeText(getApplicationContext(), "High Pass", Toast.LENGTH_SHORT).show();
+                        break;
+                    }
+                    case 9: {
+                        //Rift. Input is OpenCVFrame and output should be ToScreen
+                        Toast.makeText(getApplicationContext(), "Rift", Toast.LENGTH_SHORT).show();
+                        break;
+                    }
+                    case 10: {
+                        //Phase. Input is OpenCVFrame and output should be ToScreen
+                        Toast.makeText(getApplicationContext(), "Phase", Toast.LENGTH_SHORT).show();
+                        break;
+                    }
                 }
                 view1.setImageBitmap(finalImage);
             }
@@ -95,7 +181,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // updated continuously as the user slides the thumb
             redstrength = progress;
-            rlabel.setText("Red : " + (progress) + "%");
+            rlabel.setText(R.string.redp + (progress) + R.string.percent);
         }
 
         @Override
@@ -121,7 +207,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // updated continuously as the user slides the thumb
             greenstrength = progress;
-            glabel.setText("Green: " + (progress) + "%");
+            glabel.setText(R.string.greenp + (progress) + R.string.percent);
         }
 
         @Override
@@ -147,7 +233,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // updated continuously as the user slides the thumb
             bluestrength = progress;
-            blabel.setText("Blue %: " + (progress) + "%");
+            blabel.setText(R.string.bluep + (progress) + R.string.percent);
         }
 
         @Override
@@ -247,10 +333,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                 //Now loop that will fill out the pixel to extents
                 for (int k = 0; k < input; k++) {
                     for (int l = 0; l < input; l++) {
-
-                        if ((i + k) >= width || (j + l) >= height) {
-                            //Do nothing
-                        } else {
+                        if (!(((i + k) >= width) || ((j + l) >= height))) {
                             newbit.setPixel((i + k), (j + l), pixvalue);
                         }
                     }
@@ -311,6 +394,22 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         return newbit;
     }
 
+    //Code to initialize it so that OPEN CV works
+    // For some reason, OPENCV only works after something goes through all the pixels in a bitmap
+    public static Bitmap reset(Bitmap orig) {
+        int width = orig.getWidth();
+        int height = orig.getHeight();
+        int pixvalue;
+        Bitmap newbit = Bitmap.createBitmap(width, height, orig.getConfig());
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                pixvalue = orig.getPixel(i, j);
+                newbit.setPixel(i, j, pixvalue);
+            }
+        }
+        return newbit;
+    }
+
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
     }
@@ -330,8 +429,10 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
             e.printStackTrace();
         }
         //Create a copy bitmap which will have changes applied to it
-        finalImage = Image;
+        finalImage = reset(Image);
 
+        OpenCVFrame = new Mat(Image.getHeight(), Image.getWidth(), CvType.CV_8UC4);
+        ToScreen = new Mat(Image.getHeight(), Image.getWidth(), CvType.CV_8UC4);
         //Preliminary Code for the dropdown
         Spinner image_filters = findViewById(R.id.image_filters);
         ArrayAdapter<String> filtadapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, filternames);
@@ -390,7 +491,10 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
             // Create a new folder in SD Card
             File path = new File(filepath.getAbsolutePath() + "/FilterImages/");
             if (!path.exists()) {
-                path.mkdir();
+                boolean check = path.mkdir();
+                if (!check) {
+                    Toast.makeText(getApplicationContext(), "Failed to Find/ Make Directory", Toast.LENGTH_SHORT).show();
+                }
             }
 
             // Create a name for the saved image and save to gallery
@@ -421,9 +525,10 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         inputimage = finalImage;
         filter_pos = position;
+        Utils.bitmapToMat(inputimage, OpenCVFrame);
         switch (filter_pos) {
-            case 0:
-                //Original image, hides all bars and text
+            case 0: {
+                //Reshows Original image, hides all bars and text
                 progresslabel.setVisibility(View.INVISIBLE);
                 strength.setVisibility(View.INVISIBLE);
                 rlabel.setVisibility((View.INVISIBLE));
@@ -432,9 +537,12 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                 Red.setVisibility((View.INVISIBLE));
                 Green.setVisibility((View.INVISIBLE));
                 Blue.setVisibility((View.INVISIBLE));
-                finalImage = Image;
+                finalImage = reset(Image);
+                view1.setImageBitmap(finalImage);
                 break;
-            case 1:
+            }
+            case 1: {
+                //Sets up for Pixelation
                 progresslabel.setVisibility(View.VISIBLE);
                 strength.setVisibility(View.VISIBLE);
                 rlabel.setVisibility((View.INVISIBLE));
@@ -443,12 +551,13 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                 Red.setVisibility((View.INVISIBLE));
                 Green.setVisibility((View.INVISIBLE));
                 Blue.setVisibility((View.INVISIBLE));
-                progresslabel.setText("Pixelation Factor: 1");
+                progresslabel.setText(R.string.ipixel);
                 strength.setMax(19);
                 strength.setProgress(0);
                 break;
-            case 2:
-                //scale color
+            }
+            case 2: {
+                //Sets up for Color Scaling
                 progresslabel.setVisibility(View.INVISIBLE);
                 strength.setVisibility(View.INVISIBLE);
                 rlabel.setVisibility((View.VISIBLE));
@@ -457,23 +566,19 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                 Red.setVisibility((View.VISIBLE));
                 Green.setVisibility((View.VISIBLE));
                 Blue.setVisibility((View.VISIBLE));
-
-                rlabel.setText("Red: 100%");
-                glabel.setText("Green: 100%");
-                blabel.setText("Blue: 100%");
-
+                rlabel.setText(R.string.ired);
+                glabel.setText(R.string.igreen);
+                blabel.setText(R.string.iblue);
                 Red.setMax(200);
                 Red.setProgress(100);
-
                 Green.setMax(200);
                 Green.setProgress(100);
-
                 Blue.setMax(200);
                 Blue.setProgress(100);
-
                 break;
-            case 3:
-                //Brighten/Darken
+            }
+            case 3: {
+                //Sets up for Brighten/Darkening
                 progresslabel.setVisibility(View.VISIBLE);
                 strength.setVisibility(View.VISIBLE);
                 rlabel.setVisibility((View.INVISIBLE));
@@ -482,10 +587,117 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                 Red.setVisibility((View.INVISIBLE));
                 Green.setVisibility((View.INVISIBLE));
                 Blue.setVisibility((View.INVISIBLE));
-                progresslabel.setText("Brightness: 0");
+                progresslabel.setText(R.string.ibrightness);
                 strength.setMax(200);
                 strength.setProgress(100);
                 break;
+            }
+            case 4: {
+                progresslabel.setVisibility(View.VISIBLE);
+                strength.setVisibility(View.VISIBLE);
+                rlabel.setVisibility((View.INVISIBLE));
+                glabel.setVisibility((View.INVISIBLE));
+                blabel.setVisibility((View.INVISIBLE));
+                Red.setVisibility((View.INVISIBLE));
+                Green.setVisibility((View.INVISIBLE));
+                Blue.setVisibility((View.INVISIBLE));
+                Utils.bitmapToMat(inputimage, OpenCVFrame);
+                progresslabel.setText(R.string.iexpansion);
+                strength.setMax(49);
+                strength.setProgress(0);
+
+                break;
+            }
+            case 5: {
+                progresslabel.setVisibility(View.VISIBLE);
+                strength.setVisibility(View.VISIBLE);
+                rlabel.setVisibility((View.INVISIBLE));
+                glabel.setVisibility((View.INVISIBLE));
+                blabel.setVisibility((View.INVISIBLE));
+                Red.setVisibility((View.INVISIBLE));
+                Green.setVisibility((View.INVISIBLE));
+                Blue.setVisibility((View.INVISIBLE));
+                Utils.bitmapToMat(inputimage, OpenCVFrame);
+                progresslabel.setText(R.string.idilation);
+                strength.setMax(49);
+                strength.setProgress(0);
+                break;
+            }
+            case 6: {
+                progresslabel.setVisibility(View.VISIBLE);
+                strength.setVisibility(View.VISIBLE);
+                rlabel.setVisibility((View.INVISIBLE));
+                glabel.setVisibility((View.INVISIBLE));
+                blabel.setVisibility((View.INVISIBLE));
+                Red.setVisibility((View.INVISIBLE));
+                Green.setVisibility((View.INVISIBLE));
+                Blue.setVisibility((View.INVISIBLE));
+                Utils.bitmapToMat(inputimage, OpenCVFrame);
+                progresslabel.setText(R.string.iblur);
+                strength.setMax(100);
+                strength.setProgress(0);
+                break;
+            }
+            case 7: {
+                progresslabel.setVisibility(View.VISIBLE);
+                strength.setVisibility(View.VISIBLE);
+                rlabel.setVisibility((View.INVISIBLE));
+                glabel.setVisibility((View.INVISIBLE));
+                blabel.setVisibility((View.INVISIBLE));
+                Red.setVisibility((View.INVISIBLE));
+                Green.setVisibility((View.INVISIBLE));
+                Blue.setVisibility((View.INVISIBLE));
+                Utils.bitmapToMat(inputimage, OpenCVFrame);
+                progresslabel.setText(R.string.ilowpass);
+                strength.setMax(90);
+                strength.setProgress(0);
+                break;
+            }
+            case 8: {
+                progresslabel.setVisibility(View.VISIBLE);
+                strength.setVisibility(View.VISIBLE);
+                rlabel.setVisibility((View.INVISIBLE));
+                glabel.setVisibility((View.INVISIBLE));
+                blabel.setVisibility((View.INVISIBLE));
+                Red.setVisibility((View.INVISIBLE));
+                Green.setVisibility((View.INVISIBLE));
+                Blue.setVisibility((View.INVISIBLE));
+                Utils.bitmapToMat(inputimage, OpenCVFrame);
+                progresslabel.setText(R.string.ihighpass);
+                strength.setMax(90);
+                strength.setProgress(0);
+                break;
+            }
+            case 9: {
+                progresslabel.setVisibility(View.VISIBLE);
+                strength.setVisibility(View.VISIBLE);
+                rlabel.setVisibility((View.INVISIBLE));
+                glabel.setVisibility((View.INVISIBLE));
+                blabel.setVisibility((View.INVISIBLE));
+                Red.setVisibility((View.INVISIBLE));
+                Green.setVisibility((View.INVISIBLE));
+                Blue.setVisibility((View.INVISIBLE));
+                Utils.bitmapToMat(inputimage, OpenCVFrame);
+                progresslabel.setText(R.string.irift);
+                strength.setMax(254);
+                strength.setProgress(1);
+                break;
+            }
+            case 10: {
+                progresslabel.setVisibility(View.VISIBLE);
+                strength.setVisibility(View.VISIBLE);
+                rlabel.setVisibility((View.INVISIBLE));
+                glabel.setVisibility((View.INVISIBLE));
+                blabel.setVisibility((View.INVISIBLE));
+                Red.setVisibility((View.INVISIBLE));
+                Green.setVisibility((View.INVISIBLE));
+                Blue.setVisibility((View.INVISIBLE));
+                Utils.bitmapToMat(inputimage, OpenCVFrame);
+                progresslabel.setText(R.string.iphase);
+                strength.setMax(90);
+                strength.setProgress(0);
+                break;
+            }
         }
     }
 }

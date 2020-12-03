@@ -6,4 +6,20 @@
     <string name="img_desc">Image to be Filtered</string>
     <string name="picture">Picture</string>
     <string name="save">Save</string>
+    <string name="iexpansion">Expansion Factor: 1</string>
+    <string name="ibrightness">Brightness: 0</string>
+    <string name="iblue">Blue: 100%</string>
+    <string name="igreen">Green: 100%</string>
+    <string name="ired">Red: 100%</string>
+    <string name="ipixel">Pixelation Factor: 1</string>
+    <string name="redp">Red : </string>
+    <string name="percent">%</string>
+    <string name="greenp">"Green: "</string>
+    <string name="bluep">"Blue %: "</string>
+    <string name="idilation">Dilation Factor: 1</string>
+    <string name="iblur">Blur Strength: 0</string>
+    <string name="ilowpass">Low Pass Strength: 10</string>
+    <string name="ihighpass">High Pass Strength: 10</string>
+    <string name="irift">Real of FT Scale: 1</string>
+    <string name="iphase">Phase Factor: 0</string>
 </resources>
