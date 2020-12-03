@@ -217,8 +217,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
         if (ContextCompat.checkSelfPermission(MainActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
-            Toast.makeText(getApplicationContext(), "You Need to Grant Permissions for this app to work", Toast.LENGTH_SHORT).show();
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, requestCode);
+            if (ContextCompat.checkSelfPermission(MainActivity.this, permission) == PackageManager.PERMISSION_DENIED)
+                Toast.makeText(getApplicationContext(), "You Need to Grant Permissions for this app to work", Toast.LENGTH_SHORT).show();
         }
     }
 
