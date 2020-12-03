@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     private static final int Camera_Perms = 100;
     private static final int Storage_Perms = 101;
+    private static final int VIDEO_REQUEST = 101;
+    private android.net.Uri videoUri = null;
 
     String[] colors = {"Filter Select", "Normal", "Grey Scale", "Jet", "Ocean", "Spring", "Parula", "Cool", "Twilight"};
     int color_selected;
@@ -232,5 +234,36 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public void onNothingSelected(AdapterView<?> parent) {
         color_selected = 0;
     }
+
+
+    //when button is clicked built-in camera interface is opened
+    public void takeVideo (View view) {
+        cameraBridgeViewBase.disableView();
+        Intent videoIntent = new Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE);
+
+        if (videoIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(videoIntent, VIDEO_REQUEST);
+        }
+    }
+
+    //if video is recorded successfully videoUri is saved and showImage() is called
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == VIDEO_REQUEST && resultCode == RESULT_OK) {
+            videoUri = data.getData();
+            showImage();
+
+        }
+    }
+
+
+    //sends video data to next activity to convert to image
+    public void showImage() {
+        Intent intent = new Intent(this, MainActivity2.class);
+        intent.putExtra("videoUri", videoUri.toString());
+        startActivity(intent);
+    }
 }
+
 
