@@ -75,7 +75,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                     break;
                 }
                 case 4: {
-                    progresslabel.setText("Expansion Factor: " + (progress + 1));
+                    progresslabel.setText("Erosion Factor: " + (progress + 1));
                     filter_strength = progress + 1;
                     break;
                 }
@@ -131,9 +131,9 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                     case 1: {
                         new Thread(() -> {
                             finalImage = pixelate(inputimage, filter_strength);
-                            screenview.setImageBitmap(finalImage);
                             runOnUiThread(() -> {
                                 loading.setVisibility(View.INVISIBLE);
+                                screenview.setImageBitmap(finalImage);
                                 wait.setVisibility(View.INVISIBLE);
                             });
                             reset = 1;
@@ -144,9 +144,9 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                         //Brighten/Darken
                         new Thread(() -> {
                             finalImage = brightness(inputimage, filter_strength);
-                            screenview.setImageBitmap(finalImage);
                             runOnUiThread(() -> {
                                 loading.setVisibility(View.INVISIBLE);
+                                screenview.setImageBitmap(finalImage);
                                 wait.setVisibility(View.INVISIBLE);
                             });
                             reset = 1;
@@ -340,9 +340,9 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 wait.setVisibility(View.VISIBLE);
                 new Thread(() -> {
                     finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
-                    screenview.setImageBitmap(finalImage);
                     runOnUiThread(() -> {
                         loading.setVisibility(View.INVISIBLE);
+                        screenview.setImageBitmap(finalImage);
                         wait.setVisibility(View.INVISIBLE);
                     });
                     reset = 1;
@@ -376,8 +376,8 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 wait.setVisibility(View.VISIBLE);
                 new Thread(() -> {
                     finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
-                    screenview.setImageBitmap(finalImage);
                     runOnUiThread(() -> {
+                        screenview.setImageBitmap(finalImage);
                         loading.setVisibility(View.INVISIBLE);
                         wait.setVisibility(View.INVISIBLE);
                     });
@@ -412,8 +412,8 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 wait.setVisibility(View.VISIBLE);
                 new Thread(() -> {
                     finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
-                    screenview.setImageBitmap(finalImage);
                     runOnUiThread(() -> {
+                        screenview.setImageBitmap(finalImage);
                         loading.setVisibility(View.INVISIBLE);
                         wait.setVisibility(View.INVISIBLE);
                     });

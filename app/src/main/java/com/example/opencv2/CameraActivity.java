@@ -39,7 +39,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     int color_selected;
     int pic_taken = 0;
     int counter = 0;
-
+    int storperms, camperms;
     Mat image;
     Mat pic_mat;
     Bitmap picture;
@@ -71,31 +71,35 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
 
         takepic.setOnClickListener(v -> {
             checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, Storage_Perms);
-            //Only triggers if a frame has been captured
-            if (counter > 0) {
-                //Updates images and stops the feed
-                pic_mat = image;
-                pic_taken = 1;
+            if (storperms == 0) {
+                Toast.makeText(getApplicationContext(), "You Need to Grant Storage Permissions for this app to work", Toast.LENGTH_SHORT).show();
+            } else {
+                //Only triggers if a frame has been captured
+                if (counter > 0) {
+                    //Updates images and stops the feed
+                    pic_mat = image;
+                    pic_taken = 1;
 
-                //Covert to correct typing
-                if ((pic_mat.type() != CvType.CV_8UC4) && (pic_mat.type() != CvType.CV_8UC1) && (pic_mat.type() != CvType.CV_8UC4)) {
-                    pic_mat.convertTo(pic_mat, CvType.CV_8UC4);
+                    //Covert to correct typing
+                    if ((pic_mat.type() != CvType.CV_8UC4) && (pic_mat.type() != CvType.CV_8UC1) && (pic_mat.type() != CvType.CV_8UC4)) {
+                        pic_mat.convertTo(pic_mat, CvType.CV_8UC4);
+                    }
+
+                    //Convert the mat to a bitmap
+                    picture = Bitmap.createBitmap(pic_mat.rows(), pic_mat.cols(), Bitmap.Config.ARGB_8888);
+
+                    //Need to rotate the bitmap 90 degrees to match the orientation of the mat.
+                    Matrix matrix = new Matrix();
+                    matrix.postRotate(90);
+                    picture = Bitmap.createBitmap(picture, 0, 0, picture.getWidth(), picture.getHeight(), matrix, true);
+                    Utils.matToBitmap(pic_mat, picture);
+
+                    //Can rotate 90 again to restore back to regular orientation
+                    picture = Bitmap.createBitmap(picture, 0, 0, picture.getWidth(), picture.getHeight(), matrix, true);
+
+                    //Code to call a new activity which will send the bitmap over
+                    openNewActivity();
                 }
-
-                //Convert the mat to a bitmap
-                picture = Bitmap.createBitmap(pic_mat.rows(), pic_mat.cols(), Bitmap.Config.ARGB_8888);
-
-                //Need to rotate the bitmap 90 degrees to match the orientation of the mat.
-                Matrix matrix = new Matrix();
-                matrix.postRotate(90);
-                picture = Bitmap.createBitmap(picture, 0, 0, picture.getWidth(), picture.getHeight(), matrix, true);
-                Utils.matToBitmap(pic_mat, picture);
-
-                //Can rotate 90 again to restore back to regular orientation
-                picture = Bitmap.createBitmap(picture, 0, 0, picture.getWidth(), picture.getHeight(), matrix, true);
-
-                //Code to call a new activity which will send the bitmap over
-                openNewActivity();
             }
         });
 
@@ -194,6 +198,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
 
     //Function to create a new activity
     public void openNewActivity() {
+
         try {
             //Write bitmap to a app_specific folder
             String filename = "bitmap.png";
@@ -217,9 +222,22 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
         if (ContextCompat.checkSelfPermission(CameraActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
+            if (requestCode == 100) {
+                camperms = 0;
+            }
+            if (requestCode == 101) {
+                storperms = 0;
+            }
             ActivityCompat.requestPermissions(CameraActivity.this, new String[]{permission}, requestCode);
             if (ContextCompat.checkSelfPermission(CameraActivity.this, permission) == PackageManager.PERMISSION_DENIED)
                 Toast.makeText(getApplicationContext(), "You Need to Grant Permissions for this app to work", Toast.LENGTH_SHORT).show();
+        } else {
+            if (requestCode == 100) {
+                camperms = 1;
+            }
+            if (requestCode == 101) {
+                storperms = 1;
+            }
         }
     }
 
