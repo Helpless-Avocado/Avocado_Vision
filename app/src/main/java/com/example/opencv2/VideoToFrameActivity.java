@@ -5,15 +5,14 @@ import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.widget.ImageView;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 public class VideoToFrameActivity extends AppCompatActivity {
     private android.net.Uri videoUri = null;
-    ArrayList<Bitmap> rev = new ArrayList<Bitmap>();
+    ArrayList<Bitmap> rev = new ArrayList<>();
     @Override
     protected void onCreate(Bundle SavedInstanceState) {
 
@@ -29,7 +28,6 @@ public class VideoToFrameActivity extends AppCompatActivity {
         retriever.setDataSource(this, videoUri);
 
 
-
         //Create new mediaplayer
 
         MediaPlayer mp = MediaPlayer.create(getBaseContext(), videoUri);
@@ -42,15 +40,9 @@ public class VideoToFrameActivity extends AppCompatActivity {
             Bitmap bitmap = retriever.getFrameAtTime(i, MediaMetadataRetriever.OPTION_CLOSEST);
             if (bitmap != null) {
                 rev.add(bitmap);
-
-
             }
         }
-
-
     }
-
-
 }
 
 

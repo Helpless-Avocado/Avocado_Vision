@@ -36,7 +36,7 @@ import java.util.Date;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity2 extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class PictureEditActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     String[] filternames = {"Original", "Pixelate", "RGB Manipulation", "Brightness", "Erosion", "Dilate", "Blur", "Low Pass", "High Pass", "Rift", "Phase"};
     int filter_pos, filter_strength, redstrength, bluestrength, greenstrength;
     Bitmap Image = null;
@@ -75,7 +75,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                     break;
                 }
                 case 4: {
-                    progresslabel.setText("Expansion Factor: " + (progress + 1));
+                    progresslabel.setText("Erosion Factor: " + (progress + 1));
                     filter_strength = progress + 1;
                     break;
                 }
@@ -611,7 +611,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main2);
+        setContentView(R.layout.picture_main);
         //Resetting Reset
         reset = 0;
         //Load in bitmap info
@@ -677,7 +677,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
 
         //Code that will return to the camera/ picture page
         go_back.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity2.this, MainActivity.class);
+            Intent intent = new Intent(PictureEditActivity.this, CameraActivity.class);
             startActivity(intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
         });
 

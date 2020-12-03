@@ -27,11 +27,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Opencv2">
         <activity
-            android:name=".MainActivity2"
+            android:name=".PictureEditActivity"
             android:screenOrientation="portrait" />
         <activity android:name=".VideoToFrameActivity"/>
         <activity
-            android:name=".MainActivity"
+            android:name=".CameraActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
