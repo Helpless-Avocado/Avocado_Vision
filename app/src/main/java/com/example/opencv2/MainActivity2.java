@@ -15,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -36,14 +37,16 @@ import java.util.Date;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity2 extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
-    String[] filternames = {"Original", "Pixelate", "RGB Manipulation", "Brightness", "Expansion", "Dilate", "Blur", "Low Pass", "High Pass", "Rift", "Phase"};
+    String[] filternames = {"Original", "Pixelate", "RGB Manipulation", "Brightness", "Erosion", "Dilate", "Blur", "Low Pass", "High Pass", "Rift", "Phase"};
     int filter_pos, filter_strength, redstrength, bluestrength, greenstrength;
     Bitmap Image = null;
     Bitmap finalImage = null;
     Bitmap inputimage = null;
     int reset;
-    ImageView view1;
+    ImageView screenview;
+    ProgressBar loading;
     TextView progresslabel;
+    TextView wait;
     SeekBar strength;
     SeekBar Red, Green, Blue;
     TextView rlabel, blabel, glabel;
@@ -120,87 +123,211 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
             // called after the user finishes moving the SeekBar
             nowval = filter_strength;
             if (nowval != lastval) {
+                loading.setVisibility(View.VISIBLE);
+                wait.setVisibility(View.VISIBLE);
+                screenview.setVisibility(View.INVISIBLE);
                 switch (filter_pos) {
                     default:
                         break;
                     case 1: {
-                        finalImage = pixelate(inputimage, filter_strength);
-                        reset = 1;
+                        new Thread(() -> {
+                            finalImage = pixelate(inputimage, filter_strength);
+                            screenview.setImageBitmap(finalImage);
+                            runOnUiThread(() -> {
+                                loading.setVisibility(View.INVISIBLE);
+                                wait.setVisibility(View.INVISIBLE);
+                                screenview.setVisibility(View.VISIBLE);
+                            });
+                            reset = 1;
+                        }).start();
                         break;
                     }
                     case 3: {
                         //Brighten/Darken
-                        finalImage = brightness(inputimage, filter_strength);
-                        reset = 1;
+                        new Thread(() -> {
+                            finalImage = brightness(inputimage, filter_strength);
+                            screenview.setImageBitmap(finalImage);
+                            runOnUiThread(() -> {
+                                loading.setVisibility(View.INVISIBLE);
+                                wait.setVisibility(View.INVISIBLE);
+                                screenview.setVisibility(View.VISIBLE);
+                            });
+                            reset = 1;
+                        }).start();
                         break;
                     }
                     case 4: {
                         if (reset == 0) {
-                            Image = reset(Image);
-                            reset = 1;
+                            new Thread(() -> {
+                                Image = reset(Image);
+                                runOnUiThread(() -> {
+                                    loading.setVisibility(View.INVISIBLE);
+                                    wait.setVisibility(View.INVISIBLE);
+                                    screenview.setVisibility(View.VISIBLE);
+                                });
+                                reset = 1;
+                            }).start();
+                        } else {
+                            new Thread(() -> {
+                                kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
+                                Imgproc.erode(OpenCVFrame, ToScreen, kernel);
+                                Utils.matToBitmap(ToScreen, finalImage);
+                                runOnUiThread(() -> {
+                                    loading.setVisibility(View.INVISIBLE);
+                                    wait.setVisibility(View.INVISIBLE);
+                                    screenview.setVisibility(View.VISIBLE);
+                                });
+                            }).start();
                         }
-                        kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
-                        Imgproc.erode(OpenCVFrame, ToScreen, kernel);
-                        Utils.matToBitmap(ToScreen, finalImage);
                         break;
                     }
                     case 5: {
                         if (reset == 0) {
-                            Image = reset(Image);
-                            reset = 1;
+                            new Thread(() -> {
+                                Image = reset(Image);
+                                runOnUiThread(() -> {
+                                    loading.setVisibility(View.INVISIBLE);
+                                    wait.setVisibility(View.INVISIBLE);
+                                    screenview.setVisibility(View.VISIBLE);
+                                });
+                                reset = 1;
+                            }).start();
+                        } else {
+                            new Thread(() -> {
+                                kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
+                                Imgproc.dilate(OpenCVFrame, ToScreen, kernel);
+                                Utils.matToBitmap(ToScreen, finalImage);
+                                runOnUiThread(() -> {
+                                    loading.setVisibility(View.INVISIBLE);
+                                    wait.setVisibility(View.INVISIBLE);
+                                    screenview.setVisibility(View.VISIBLE);
+                                });
+                            }).start();
                         }
-                        kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
-                        Imgproc.dilate(OpenCVFrame, ToScreen, kernel);
-                        Utils.matToBitmap(ToScreen, finalImage);
                         break;
                     }
                     case 6: {
                         if (reset == 0) {
-                            Image = reset(Image);
-                            reset = 1;
+                            new Thread(() -> {
+                                Image = reset(Image);
+                                runOnUiThread(() -> {
+                                    loading.setVisibility(View.INVISIBLE);
+                                    wait.setVisibility(View.INVISIBLE);
+                                    screenview.setVisibility(View.VISIBLE);
+                                });
+                                reset = 1;
+                            }).start();
+                        } else {
+                            new Thread(() -> {
+                                Imgproc.blur(OpenCVFrame, ToScreen, new Size(filter_strength, filter_strength));
+                                Utils.matToBitmap(ToScreen, finalImage);
+                                runOnUiThread(() -> {
+                                    loading.setVisibility(View.INVISIBLE);
+                                    wait.setVisibility(View.INVISIBLE);
+                                    screenview.setVisibility(View.VISIBLE);
+                                });
+                            }).start();
                         }
-                        Imgproc.blur(OpenCVFrame, ToScreen, new Size(filter_strength, filter_strength));
-                        Utils.matToBitmap(ToScreen, finalImage);
                         break;
                     }
                     case 7: {
                         if (reset == 0) {
-                            Image = reset(Image);
-                            reset = 1;
+                            new Thread(() -> {
+                                Image = reset(Image);
+                                runOnUiThread(() -> {
+                                    loading.setVisibility(View.INVISIBLE);
+                                    wait.setVisibility(View.INVISIBLE);
+                                    screenview.setVisibility(View.VISIBLE);
+                                });
+                                reset = 1;
+                            }).start();
+                        } else {
+                            new Thread(() -> {
+                                //Low Pass Filter. Input is OpenCVFrame and output should be ToScreen
+                                Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
+                                runOnUiThread(() -> {
+                                    loading.setVisibility(View.INVISIBLE);
+                                    wait.setVisibility(View.INVISIBLE);
+                                    screenview.setVisibility(View.VISIBLE);
+                                });
+                            }).start();
                         }
-                        //Low Pass Filter. Input is OpenCVFrame and output should be ToScreen
-                        Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
                         break;
                     }
                     case 8: {
                         if (reset == 0) {
-                            Image = reset(Image);
-                            reset = 1;
+                            new Thread(() -> {
+                                Image = reset(Image);
+                                runOnUiThread(() -> {
+                                    loading.setVisibility(View.INVISIBLE);
+                                    wait.setVisibility(View.INVISIBLE);
+                                    screenview.setVisibility(View.VISIBLE);
+                                });
+                                reset = 1;
+                            }).start();
+                        } else {
+                            new Thread(() -> {
+                                //High Pass Filter. Input is OpenCVFrame and output should be ToScreen
+                                Toast.makeText(getApplicationContext(), "High Pass", Toast.LENGTH_SHORT).show();
+                                runOnUiThread(() -> {
+                                    loading.setVisibility(View.INVISIBLE);
+                                    wait.setVisibility(View.INVISIBLE);
+                                    screenview.setVisibility(View.VISIBLE);
+                                });
+                            }).start();
                         }
-                        //High Pass Filter. Input is OpenCVFrame and output should be ToScreen
-                        Toast.makeText(getApplicationContext(), "High Pass", Toast.LENGTH_SHORT).show();
                         break;
                     }
                     case 9: {
                         if (reset == 0) {
-                            Image = reset(Image);
-                            reset = 1;
+                            new Thread(() -> {
+                                Image = reset(Image);
+                                runOnUiThread(() -> {
+                                    loading.setVisibility(View.INVISIBLE);
+                                    wait.setVisibility(View.INVISIBLE);
+                                    screenview.setVisibility(View.VISIBLE);
+                                });
+                                reset = 1;
+                            }).start();
+                        } else {
+                            new Thread(() -> {
+                                //Rift. Input is OpenCVFrame and output should be ToScreen
+                                Toast.makeText(getApplicationContext(), "Rift", Toast.LENGTH_SHORT).show();
+                                runOnUiThread(() -> {
+                                    loading.setVisibility(View.INVISIBLE);
+                                    wait.setVisibility(View.INVISIBLE);
+                                    screenview.setVisibility(View.VISIBLE);
+                                });
+                            }).start();
                         }
-                        //Rift. Input is OpenCVFrame and output should be ToScreen
-                        Toast.makeText(getApplicationContext(), "Rift", Toast.LENGTH_SHORT).show();
                         break;
                     }
                     case 10: {
                         if (reset == 0) {
-                            Image = reset(Image);
-                            reset = 1;
+                            new Thread(() -> {
+                                Image = reset(Image);
+                                runOnUiThread(() -> {
+                                    loading.setVisibility(View.INVISIBLE);
+                                    wait.setVisibility(View.INVISIBLE);
+                                    screenview.setVisibility(View.VISIBLE);
+                                });
+                                reset = 1;
+                            }).start();
+                        } else {
+                            new Thread(() -> {
+                                //Phase. Input is OpenCVFrame and output should be ToScreen
+                                Toast.makeText(getApplicationContext(), "Phase", Toast.LENGTH_SHORT).show();
+                                runOnUiThread(() -> {
+                                    loading.setVisibility(View.INVISIBLE);
+                                    wait.setVisibility(View.INVISIBLE);
+                                    screenview.setVisibility(View.VISIBLE);
+                                });
+                            }).start();
                         }
-                        //Phase. Input is OpenCVFrame and output should be ToScreen
-                        Toast.makeText(getApplicationContext(), "Phase", Toast.LENGTH_SHORT).show();
                         break;
                     }
                 }
-                view1.setImageBitmap(finalImage);
+                screenview.setImageBitmap(finalImage);
             }
         }
     };
@@ -213,7 +340,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // updated continuously as the user slides the thumb
             redstrength = progress;
-            rlabel.setText("Red %: " + progress + "%");
+            rlabel.setText("Red : " + progress + "%");
         }
 
         @Override
@@ -226,8 +353,19 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         public void onStopTrackingTouch(SeekBar seekBar) {
             nowval = redstrength;
             if (nowval != lastval) {
-                finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
-                view1.setImageBitmap(finalImage);
+                loading.setVisibility(View.VISIBLE);
+                wait.setVisibility(View.VISIBLE);
+                screenview.setVisibility(View.INVISIBLE);
+                new Thread(() -> {
+                    finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
+                    screenview.setImageBitmap(finalImage);
+                    runOnUiThread(() -> {
+                        loading.setVisibility(View.INVISIBLE);
+                        wait.setVisibility(View.INVISIBLE);
+                        screenview.setVisibility(View.VISIBLE);
+                    });
+                    reset = 1;
+                }).start();
             }
         }
     };
@@ -240,7 +378,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // updated continuously as the user slides the thumb
             greenstrength = progress;
-            glabel.setText("Green %: " + progress + "%");
+            glabel.setText("Green : " + progress + "%");
         }
 
         @Override
@@ -253,8 +391,19 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         public void onStopTrackingTouch(SeekBar seekBar) {
             nowval = greenstrength;
             if (nowval != lastval) {
-                finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
-                view1.setImageBitmap(finalImage);
+                loading.setVisibility(View.VISIBLE);
+                wait.setVisibility(View.VISIBLE);
+                screenview.setVisibility(View.INVISIBLE);
+                new Thread(() -> {
+                    finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
+                    screenview.setImageBitmap(finalImage);
+                    runOnUiThread(() -> {
+                        loading.setVisibility(View.INVISIBLE);
+                        wait.setVisibility(View.INVISIBLE);
+                        screenview.setVisibility(View.VISIBLE);
+                    });
+                    reset = 1;
+                }).start();
             }
         }
     };
@@ -267,7 +416,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // updated continuously as the user slides the thumb
             bluestrength = progress;
-            blabel.setText("Blue %: " + progress + "%");
+            blabel.setText("Blue : " + progress + "%");
         }
 
         @Override
@@ -280,8 +429,19 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         public void onStopTrackingTouch(SeekBar seekBar) {
             nowval = bluestrength;
             if (nowval != lastval) {
-                finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
-                view1.setImageBitmap(finalImage);
+                loading.setVisibility(View.VISIBLE);
+                wait.setVisibility(View.VISIBLE);
+                screenview.setVisibility(View.INVISIBLE);
+                new Thread(() -> {
+                    finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
+                    screenview.setImageBitmap(finalImage);
+                    runOnUiThread(() -> {
+                        loading.setVisibility(View.INVISIBLE);
+                        wait.setVisibility(View.INVISIBLE);
+                        screenview.setVisibility(View.VISIBLE);
+                    });
+                    reset = 1;
+                }).start();
             }
         }
     };
@@ -306,9 +466,9 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         Bitmap newbit = Bitmap.createBitmap(width, height, orig.getConfig());
 
         //Scale factor, with 100 set to normal
-        float rscale = (float) (rvalue / 100);
-        float gscale = (float) (gvalue / 100);
-        float bscale = (float) (bvalue / 100);
+        float rscale = (float) rvalue / 100;
+        float gscale = (float) gvalue / 100;
+        float bscale = (float) bvalue / 100;
 
         //Go pixel by pixel to get original color information
         int r, g, b, a;
@@ -475,11 +635,17 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         image_filters.setAdapter(filtadapter);
         image_filters.setOnItemSelectedListener(this);
 
-        //Showing the image on the screen
-        view1 = findViewById(R.id.imageView1);
-        view1.setImageBitmap(finalImage);
+        //Loading in the loading bar and wait text
+        loading = findViewById(R.id.loading);
+        loading.setVisibility(View.INVISIBLE);
+        wait = findViewById(R.id.wait);
+        wait.setVisibility(View.INVISIBLE);
 
-        // Setting up the progress bar and text message of it, hiding them all until ready
+        //Showing the image on the screen
+        screenview = findViewById(R.id.screenview);
+        screenview.setImageBitmap(finalImage);
+
+        // Setting up the strength bar and text message of it, hiding them all until ready
         strength = findViewById(R.id.strength);
         strength.setOnSeekBarChangeListener(strengthListener);
         strength.setVisibility(View.INVISIBLE);
@@ -574,7 +740,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                 Blue.setVisibility((View.INVISIBLE));
                 finalImage = reset(Image);
                 reset = 1;
-                view1.setImageBitmap(finalImage);
+                screenview.setImageBitmap(finalImage);
                 break;
             }
             case 1: {
