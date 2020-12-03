@@ -477,7 +477,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         Button go_back = findViewById(R.id.button);
         Button save = findViewById(R.id.save_button);
 
-        //Code to refresh the bitmap
+        //Code to refresh the bitmap for OpenCV
         finalImage = reset(finalImage);
 
         //Code that will return to the camera/ picture page
