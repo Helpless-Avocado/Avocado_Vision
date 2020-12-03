@@ -432,7 +432,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
             e.printStackTrace();
         }
         //Create a copy bitmap which will have changes applied to it
-        finalImage = reset(Image);
+        finalImage = Image;
 
         OpenCVFrame = new Mat(Image.getHeight(), Image.getWidth(), CvType.CV_8UC4);
         ToScreen = new Mat(Image.getHeight(), Image.getWidth(), CvType.CV_8UC4);
@@ -476,6 +476,9 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         // Set up on Click Listeners for the Buttons
         Button go_back = findViewById(R.id.button);
         Button save = findViewById(R.id.save_button);
+
+        //Code to refresh the bitmap
+        finalImage = reset(finalImage);
 
         //Code that will return to the camera/ picture page
         go_back.setOnClickListener(v -> {
