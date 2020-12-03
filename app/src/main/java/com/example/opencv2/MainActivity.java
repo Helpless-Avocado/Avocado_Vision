@@ -240,7 +240,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public void takeVideo (View view) {
         cameraBridgeViewBase.disableView();
         Intent videoIntent = new Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE);
-
         if (videoIntent.resolveActivity(getPackageManager()) != null) {
             startActivityForResult(videoIntent, VIDEO_REQUEST);
         }
@@ -253,7 +252,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         if (requestCode == VIDEO_REQUEST && resultCode == RESULT_OK) {
             videoUri = data.getData();
             showImage();
-
         }
     }
 
