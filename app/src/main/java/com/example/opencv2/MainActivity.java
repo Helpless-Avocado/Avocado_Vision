@@ -260,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     //sends video data to next activity to convert to image
     public void showImage() {
-        Intent intent = new Intent(this, MainActivity2.class);
+        Intent intent = new Intent(this, VideoToFrameActivity.class);
         intent.putExtra("videoUri", videoUri.toString());
         startActivity(intent);
     }
