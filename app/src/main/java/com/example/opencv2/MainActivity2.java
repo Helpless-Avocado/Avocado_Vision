@@ -244,13 +244,13 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                         } else {
                             new Thread(() -> {
                                 //Low Pass Filter. Input is OpenCVFrame and output should be ToScreen
-                                Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
                                     screenview.setVisibility(View.VISIBLE);
                                 });
                             }).start();
+                            Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
                         }
                         break;
                     }
@@ -268,13 +268,13 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                         } else {
                             new Thread(() -> {
                                 //High Pass Filter. Input is OpenCVFrame and output should be ToScreen
-                                Toast.makeText(getApplicationContext(), "High Pass", Toast.LENGTH_SHORT).show();
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
                                     screenview.setVisibility(View.VISIBLE);
                                 });
                             }).start();
+                            Toast.makeText(getApplicationContext(), "High Pass", Toast.LENGTH_SHORT).show();
                         }
                         break;
                     }
@@ -292,13 +292,13 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                         } else {
                             new Thread(() -> {
                                 //Rift. Input is OpenCVFrame and output should be ToScreen
-                                Toast.makeText(getApplicationContext(), "Rift", Toast.LENGTH_SHORT).show();
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
                                     screenview.setVisibility(View.VISIBLE);
                                 });
                             }).start();
+                            Toast.makeText(getApplicationContext(), "Rift", Toast.LENGTH_SHORT).show();
                         }
                         break;
                     }
@@ -316,13 +316,13 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                         } else {
                             new Thread(() -> {
                                 //Phase. Input is OpenCVFrame and output should be ToScreen
-                                Toast.makeText(getApplicationContext(), "Phase", Toast.LENGTH_SHORT).show();
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
                                     screenview.setVisibility(View.VISIBLE);
                                 });
                             }).start();
+                            Toast.makeText(getApplicationContext(), "Phase", Toast.LENGTH_SHORT).show();
                         }
                         break;
                     }
