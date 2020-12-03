@@ -41,6 +41,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
     Bitmap Image = null;
     Bitmap finalImage = null;
     Bitmap inputimage = null;
+    int reset;
     ImageView view1;
     TextView progresslabel;
     SeekBar strength;
@@ -124,46 +125,76 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                         break;
                     case 1: {
                         finalImage = pixelate(inputimage, filter_strength);
+                        reset = 1;
                         break;
                     }
                     case 3: {
                         //Brighten/Darken
                         finalImage = brightness(inputimage, filter_strength);
+                        reset = 1;
                         break;
                     }
                     case 4: {
+                        if (reset == 0) {
+                            Image = reset(Image);
+                            reset = 1;
+                        }
                         kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
                         Imgproc.erode(OpenCVFrame, ToScreen, kernel);
                         Utils.matToBitmap(ToScreen, finalImage);
                         break;
                     }
                     case 5: {
+                        if (reset == 0) {
+                            Image = reset(Image);
+                            reset = 1;
+                        }
                         kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
                         Imgproc.dilate(OpenCVFrame, ToScreen, kernel);
                         Utils.matToBitmap(ToScreen, finalImage);
                         break;
                     }
                     case 6: {
+                        if (reset == 0) {
+                            Image = reset(Image);
+                            reset = 1;
+                        }
                         Imgproc.blur(OpenCVFrame, ToScreen, new Size(filter_strength, filter_strength));
                         Utils.matToBitmap(ToScreen, finalImage);
                         break;
                     }
                     case 7: {
+                        if (reset == 0) {
+                            Image = reset(Image);
+                            reset = 1;
+                        }
                         //Low Pass Filter. Input is OpenCVFrame and output should be ToScreen
                         Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
                         break;
                     }
                     case 8: {
+                        if (reset == 0) {
+                            Image = reset(Image);
+                            reset = 1;
+                        }
                         //High Pass Filter. Input is OpenCVFrame and output should be ToScreen
                         Toast.makeText(getApplicationContext(), "High Pass", Toast.LENGTH_SHORT).show();
                         break;
                     }
                     case 9: {
+                        if (reset == 0) {
+                            Image = reset(Image);
+                            reset = 1;
+                        }
                         //Rift. Input is OpenCVFrame and output should be ToScreen
                         Toast.makeText(getApplicationContext(), "Rift", Toast.LENGTH_SHORT).show();
                         break;
                     }
                     case 10: {
+                        if (reset == 0) {
+                            Image = reset(Image);
+                            reset = 1;
+                        }
                         //Phase. Input is OpenCVFrame and output should be ToScreen
                         Toast.makeText(getApplicationContext(), "Phase", Toast.LENGTH_SHORT).show();
                         break;
@@ -421,7 +452,8 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
-
+        //Resetting Reset
+        reset = 0;
         //Load in bitmap info
         String filename = getIntent().getStringExtra("image");
         try {
@@ -476,9 +508,6 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         // Set up on Click Listeners for the Buttons
         Button go_back = findViewById(R.id.button);
         Button save = findViewById(R.id.save_button);
-
-        //Code to refresh the bitmap for OpenCV
-        finalImage = reset(finalImage);
 
         //Code that will return to the camera/ picture page
         go_back.setOnClickListener(v -> {
@@ -544,6 +573,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                 Green.setVisibility((View.INVISIBLE));
                 Blue.setVisibility((View.INVISIBLE));
                 finalImage = reset(Image);
+                reset = 1;
                 view1.setImageBitmap(finalImage);
                 break;
             }
