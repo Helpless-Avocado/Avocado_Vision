@@ -125,7 +125,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
             if (nowval != lastval) {
                 loading.setVisibility(View.VISIBLE);
                 wait.setVisibility(View.VISIBLE);
-                screenview.setVisibility(View.INVISIBLE);
                 switch (filter_pos) {
                     default:
                         break;
@@ -136,7 +135,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                             runOnUiThread(() -> {
                                 loading.setVisibility(View.INVISIBLE);
                                 wait.setVisibility(View.INVISIBLE);
-                                screenview.setVisibility(View.VISIBLE);
                             });
                             reset = 1;
                         }).start();
@@ -150,7 +148,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                             runOnUiThread(() -> {
                                 loading.setVisibility(View.INVISIBLE);
                                 wait.setVisibility(View.INVISIBLE);
-                                screenview.setVisibility(View.VISIBLE);
                             });
                             reset = 1;
                         }).start();
@@ -163,7 +160,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
-                                    screenview.setVisibility(View.VISIBLE);
                                 });
                                 reset = 1;
                             }).start();
@@ -175,7 +171,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
-                                    screenview.setVisibility(View.VISIBLE);
                                 });
                             }).start();
                         }
@@ -188,7 +183,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
-                                    screenview.setVisibility(View.VISIBLE);
                                 });
                                 reset = 1;
                             }).start();
@@ -200,7 +194,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
-                                    screenview.setVisibility(View.VISIBLE);
                                 });
                             }).start();
                         }
@@ -213,7 +206,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
-                                    screenview.setVisibility(View.VISIBLE);
                                 });
                                 reset = 1;
                             }).start();
@@ -224,7 +216,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
-                                    screenview.setVisibility(View.VISIBLE);
                                 });
                             }).start();
                         }
@@ -237,7 +228,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
-                                    screenview.setVisibility(View.VISIBLE);
                                 });
                                 reset = 1;
                             }).start();
@@ -247,7 +237,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
-                                    screenview.setVisibility(View.VISIBLE);
                                 });
                             }).start();
                             Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
@@ -261,7 +250,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
-                                    screenview.setVisibility(View.VISIBLE);
                                 });
                                 reset = 1;
                             }).start();
@@ -271,7 +259,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
-                                    screenview.setVisibility(View.VISIBLE);
                                 });
                             }).start();
                             Toast.makeText(getApplicationContext(), "High Pass", Toast.LENGTH_SHORT).show();
@@ -285,7 +272,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
-                                    screenview.setVisibility(View.VISIBLE);
                                 });
                                 reset = 1;
                             }).start();
@@ -295,7 +281,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
-                                    screenview.setVisibility(View.VISIBLE);
                                 });
                             }).start();
                             Toast.makeText(getApplicationContext(), "Rift", Toast.LENGTH_SHORT).show();
@@ -309,7 +294,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
-                                    screenview.setVisibility(View.VISIBLE);
                                 });
                                 reset = 1;
                             }).start();
@@ -319,7 +303,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                 runOnUiThread(() -> {
                                     loading.setVisibility(View.INVISIBLE);
                                     wait.setVisibility(View.INVISIBLE);
-                                    screenview.setVisibility(View.VISIBLE);
                                 });
                             }).start();
                             Toast.makeText(getApplicationContext(), "Phase", Toast.LENGTH_SHORT).show();
@@ -355,14 +338,12 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
             if (nowval != lastval) {
                 loading.setVisibility(View.VISIBLE);
                 wait.setVisibility(View.VISIBLE);
-                screenview.setVisibility(View.INVISIBLE);
                 new Thread(() -> {
                     finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
                     screenview.setImageBitmap(finalImage);
                     runOnUiThread(() -> {
                         loading.setVisibility(View.INVISIBLE);
                         wait.setVisibility(View.INVISIBLE);
-                        screenview.setVisibility(View.VISIBLE);
                     });
                     reset = 1;
                 }).start();
@@ -393,14 +374,12 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
             if (nowval != lastval) {
                 loading.setVisibility(View.VISIBLE);
                 wait.setVisibility(View.VISIBLE);
-                screenview.setVisibility(View.INVISIBLE);
                 new Thread(() -> {
                     finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
                     screenview.setImageBitmap(finalImage);
                     runOnUiThread(() -> {
                         loading.setVisibility(View.INVISIBLE);
                         wait.setVisibility(View.INVISIBLE);
-                        screenview.setVisibility(View.VISIBLE);
                     });
                     reset = 1;
                 }).start();
@@ -431,14 +410,12 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
             if (nowval != lastval) {
                 loading.setVisibility(View.VISIBLE);
                 wait.setVisibility(View.VISIBLE);
-                screenview.setVisibility(View.INVISIBLE);
                 new Thread(() -> {
                     finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
                     screenview.setImageBitmap(finalImage);
                     runOnUiThread(() -> {
                         loading.setVisibility(View.INVISIBLE);
                         wait.setVisibility(View.INVISIBLE);
-                        screenview.setVisibility(View.VISIBLE);
                     });
                     reset = 1;
                 }).start();
