@@ -12,10 +12,6 @@
     <string name="igreen">Green: 100%</string>
     <string name="ired">Red: 100%</string>
     <string name="ipixel">Pixelation Factor: 1</string>
-    <string name="redp">Red : </string>
-    <string name="percent">%</string>
-    <string name="greenp">"Green: "</string>
-    <string name="bluep">"Blue %: "</string>
     <string name="idilation">Dilation Factor: 1</string>
     <string name="iblur">Blur Strength: 0</string>
     <string name="ilowpass">Low Pass Strength: 10</string>

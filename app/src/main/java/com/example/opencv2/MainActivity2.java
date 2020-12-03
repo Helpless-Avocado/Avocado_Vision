@@ -177,11 +177,12 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
 
         int nowval, lastval;
 
+        @SuppressLint("SetTextI18n")
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // updated continuously as the user slides the thumb
             redstrength = progress;
-            rlabel.setText(R.string.redp + (progress) + R.string.percent);
+            rlabel.setText("Red %: " + progress + "%");
         }
 
         @Override
@@ -203,11 +204,12 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
 
         int nowval, lastval;
 
+        @SuppressLint("SetTextI18n")
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // updated continuously as the user slides the thumb
             greenstrength = progress;
-            glabel.setText(R.string.greenp + (progress) + R.string.percent);
+            glabel.setText("Green %: " + progress + "%");
         }
 
         @Override
@@ -229,11 +231,12 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
 
         int nowval, lastval;
 
+        @SuppressLint("SetTextI18n")
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // updated continuously as the user slides the thumb
             bluestrength = progress;
-            blabel.setText(R.string.bluep + (progress) + R.string.percent);
+            blabel.setText("Blue %: " + progress + "%");
         }
 
         @Override
