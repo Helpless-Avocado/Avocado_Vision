@@ -6,8 +6,8 @@
 6
 7    <uses-sdk
 8        android:minSdkVersion="15"
-8-->C:\Users\Linglong\Desktop\HWs\EC327\Android_Tests\opencv2\openCVLibrary3412\src\main\AndroidManifest.xml
+8-->C:\Users\lucag\OneDrive\Desktop\BU\FALL2020\EC327\Final_Project\openCVLibrary3412\src\main\AndroidManifest.xml
 9        android:targetSdkVersion="28" />
-9-->C:\Users\Linglong\Desktop\HWs\EC327\Android_Tests\opencv2\openCVLibrary3412\src\main\AndroidManifest.xml
+9-->C:\Users\lucag\OneDrive\Desktop\BU\FALL2020\EC327\Final_Project\openCVLibrary3412\src\main\AndroidManifest.xml
 10
 11</manifest>
