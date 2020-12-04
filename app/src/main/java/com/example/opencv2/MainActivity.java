@@ -252,17 +252,26 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == VIDEO_REQUEST && resultCode == RESULT_OK) {
             videoUri = data.getData();
-            showImage();
+            toImage();
+            playVideo();
 
         }
     }
 
 
     //sends video data to next activity to convert to image
-    public void showImage() {
+    public void toImage() {
         Intent intent = new Intent(this, VideoToFrameActivity.class);
         intent.putExtra("videoUri", videoUri.toString());
         startActivity(intent);
+    }
+
+    public void playVideo()
+    {
+        Intent playIntent = new Intent(this, VideoToFrameActivity.class);
+        playIntent.putExtra("videoUri", videoUri.toString());
+        startActivity(playIntent);
+
     }
 }
 

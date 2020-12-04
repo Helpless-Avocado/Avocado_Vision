@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".VideoToFrameActivity">
+
+    <Button
+        android:id="@+id/buttonv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:text="@string/Return"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/save_buttonv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/save"
+        app:layout_constraintBottom_toBottomOf="@+id/buttonv"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/buttonv"
+        app:layout_constraintTop_toTopOf="@+id/buttonv" />
+
+    <VideoView
+        android:id="@+id/videoView1"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:contentDescription="@string/vid_desc"
+        android:gravity="top"
+        app:layout_constraintBottom_toTopOf="@+id/progress_labelv"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <SeekBar
+        android:id="@+id/strengthv"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:progress="1"
+        app:layout_constraintBottom_toTopOf="@+id/buttonv"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Spinner
+        android:id="@+id/video_filters"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:gravity="center|center_horizontal"
+        app:layout_constraintBottom_toBottomOf="@+id/buttonv"
+        app:layout_constraintEnd_toStartOf="@+id/buttonv"
+        app:layout_constraintStart_toStartOf="parent"
+        android:background="@drawable/border"
+        android:minHeight="30dp"
+        app:layout_constraintTop_toTopOf="@+id/buttonv" />
+
+
+    <TextView
+        android:id="@+id/progress_labelv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/strengthv"
+        app:layout_constraintEnd_toEndOf="@+id/strengthv"
+        app:layout_constraintStart_toStartOf="@+id/strengthv" />
+
+<!--    <SeekBar-->
+<!--        android:id="@+id/redBarv"-->
+<!--        android:layout_width="100dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        app:layout_constraintBottom_toBottomOf="@+id/greenBarv"-->
+<!--        app:layout_constraintEnd_toStartOf="@+id/greenBarv"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/greenBarv" />-->
+
+<!--    <SeekBar-->
+<!--        android:id="@+id/greenBarv"-->
+<!--        android:layout_width="100dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        app:layout_constraintBottom_toBottomOf="@+id/blueBarv"-->
+<!--        app:layout_constraintEnd_toEndOf="@+id/videoView1"-->
+<!--        app:layout_constraintStart_toStartOf="@+id/videoView1"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/blueBarv"-->
+<!--        app:layout_constraintVertical_bias="0.0" />-->
+
+<!--    <SeekBar-->
+<!--        android:id="@+id/blueBarv"-->
+<!--        android:layout_width="100dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/buttonv"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toEndOf="@+id/greenBarv"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/strengthv" />-->
+
+    <TextView
+        android:id="@+id/redTextv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/progress_labelv"
+        app:layout_constraintEnd_toEndOf="@+id/redBarv"
+        app:layout_constraintStart_toStartOf="@id/redBarv"
+        app:layout_constraintTop_toTopOf="@+id/progress_labelv" />
+
+    <TextView
+        android:id="@+id/greenTextv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/progress_labelv"
+        app:layout_constraintEnd_toEndOf="@+id/greenBarv"
+        app:layout_constraintStart_toStartOf="@id/greenBarv"
+        app:layout_constraintTop_toTopOf="@+id/progress_labelv" />
+
+    <TextView
+        android:id="@+id/blueTextv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/progress_labelv"
+        app:layout_constraintEnd_toEndOf="@+id/blueBarv"
+        app:layout_constraintStart_toStartOf="@id/blueBarv"
+        app:layout_constraintTop_toTopOf="@+id/progress_labelv" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
