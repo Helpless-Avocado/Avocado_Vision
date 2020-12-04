@@ -44,7 +44,6 @@
 
     <SeekBar
         android:id="@+id/strength"
-        style="@style/Widget.AppCompat.SeekBar.Discrete"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:max="100"
@@ -87,8 +86,8 @@
     <ProgressBar
         android:id="@+id/loading"
         style="?android:attr/progressBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
         android:indeterminate="true"
         app:layout_constraintBottom_toTopOf="@+id/progress_label"
         app:layout_constraintEnd_toEndOf="@+id/screenview"
@@ -144,11 +143,14 @@
         android:id="@+id/wait"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@drawable/border"
         android:text="@string/please_wait"
+        android:textColor="@color/black"
         android:textSize="64sp"
         app:layout_constraintBottom_toTopOf="@+id/loading"
         app:layout_constraintEnd_toEndOf="@+id/loading"
         app:layout_constraintStart_toStartOf="@+id/loading"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
