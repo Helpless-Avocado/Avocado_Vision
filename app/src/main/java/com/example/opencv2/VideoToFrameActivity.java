@@ -44,14 +44,20 @@ import static org.opencv.core.Core.split;
 
 
 public class VideoToFrameActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+    //Variables for control / text input
     private final android.net.Uri videoUri = null;
     String[] filternames = {"Original", "Erosion", "Dilate", "Blur", "Low Pass", "High Pass", "Rift", "Phase"};
     int filter_pos, filter_strength;
+    int processing = 0;
+
+    //View Variables
     ProgressBar loading;
     TextView progresslabel, wait;
     SeekBar strength;
     ImageView imageView;
     private VideoView myVideoView;
+
+    //Image Variables
     ArrayList<Bitmap> framesVideo = new ArrayList<>();
     ArrayList<Bitmap> filteredVideo = new ArrayList<>();
     Bitmap frame, filtframe;
@@ -66,42 +72,44 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         @SuppressLint("SetTextI18n")
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            // updated continuously as the user slides the thumb
-            switch (filter_pos) {
-                case 1: {
-                    progresslabel.setText("Erosion Factor: " + (progress + 1));
-                    filter_strength = progress + 1;
-                    break;
-                }
-                case 2: {
-                    progresslabel.setText("Dilation Factor: " + (progress + 1));
-                    filter_strength = progress + 1;
-                    break;
-                }
-                case 3: {
-                    progresslabel.setText("Blur Strength: " + (progress));
-                    filter_strength = progress + 1;
-                    break;
-                }
-                case 4: {
-                    progresslabel.setText("Low Pass Strength: " + (progress + 10));
-                    filter_strength = progress + 10;
-                    break;
-                }
-                case 5: {
-                    progresslabel.setText("High Pass Strength: " + (progress + 10));
-                    filter_strength = progress + 10;
-                    break;
-                }
-                case 6: {
-                    progresslabel.setText("Rift Magnitude: " + (progress + 1));
-                    filter_strength = progress + 1;
-                    break;
-                }
-                case 7: {
-                    progresslabel.setText("Phase Factor: " + (progress));
-                    filter_strength = progress;
-                    break;
+            // updated continuously as the user slides the thumb, only if not processing
+            if (processing == 0) {
+                switch (filter_pos) {
+                    case 1: {
+                        progresslabel.setText("Erosion Factor: " + (progress + 1));
+                        filter_strength = progress + 1;
+                        break;
+                    }
+                    case 2: {
+                        progresslabel.setText("Dilation Factor: " + (progress + 1));
+                        filter_strength = progress + 1;
+                        break;
+                    }
+                    case 3: {
+                        progresslabel.setText("Blur Strength: " + (progress));
+                        filter_strength = progress + 1;
+                        break;
+                    }
+                    case 4: {
+                        progresslabel.setText("Low Pass Strength: " + (progress + 10));
+                        filter_strength = progress + 10;
+                        break;
+                    }
+                    case 5: {
+                        progresslabel.setText("High Pass Strength: " + (progress + 10));
+                        filter_strength = progress + 10;
+                        break;
+                    }
+                    case 6: {
+                        progresslabel.setText("Rift Magnitude: " + (progress + 1));
+                        filter_strength = progress + 1;
+                        break;
+                    }
+                    case 7: {
+                        progresslabel.setText("Phase Factor: " + (progress));
+                        filter_strength = progress;
+                        break;
+                    }
                 }
             }
         }
@@ -116,105 +124,99 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         public void onStopTrackingTouch(SeekBar seekBar) {
             // called after the user finishes moving the SeekBar
             nowval = filter_strength;
-            if (nowval != lastval) {
-                loading.setVisibility(View.VISIBLE);
-                wait.setVisibility(View.VISIBLE);
-                switch (filter_pos) {
-                    //Sets up the loading / progress bar, creates threads to run specific filters
-                    //Then once done running progress bar dissappears and video ready
-                    case 1: {
-                        new Thread(() -> {
-                            Mat kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
-                            for (int i = 0; i < framesVideo.size(); i++) {
-                                frame = framesVideo.get(i);
-                                Utils.bitmapToMat(frame, framemat);
-                                Imgproc.erode(framemat, filtmat, kernel);
-                                Utils.matToBitmap(filtmat, filtframe);
-                                filteredVideo.add(filtframe);
-                            }
-                            runOnUiThread(() -> {
-                                loading.setVisibility(View.INVISIBLE);
-                                wait.setVisibility(View.INVISIBLE);
-                                myVideoView.setVisibility(View.INVISIBLE);
-                                imageView.setVisibility((View.VISIBLE));
-                                imageView.setImageBitmap(filteredVideo.get(1));
-                            });
-                        }).start();
-                        break;
-                    }
-                    case 2: {
-                        new Thread(() -> {
-                            Mat kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
-                            for (int i = 0; i < framesVideo.size(); i++) {
-                                frame = framesVideo.get(i);
-                                Utils.bitmapToMat(frame, framemat);
-                                Imgproc.dilate(framemat, filtmat, kernel);
-                                Utils.matToBitmap(filtmat, filtframe);
-                                filteredVideo.add(filtframe);
-                            }
-                            runOnUiThread(() -> {
-                                loading.setVisibility(View.INVISIBLE);
-                                wait.setVisibility(View.INVISIBLE);
-                                myVideoView.setVisibility(View.INVISIBLE);
-                                imageView.setVisibility((View.VISIBLE));
-                                imageView.setImageBitmap(filteredVideo.get(1));
-                            });
-                        }).start();
-                        break;
-                    }
-                    case 3: {
-                        new Thread(() -> {
-                            Size size = new Size(filter_strength, filter_strength);
-                            for (int i = 0; i < framesVideo.size(); i++) {
-                                frame = framesVideo.get(i);
-                                Utils.bitmapToMat(frame, framemat);
-                                Imgproc.blur(framemat, filtmat, size);
-                                Utils.matToBitmap(filtmat, filtframe);
-                                filteredVideo.add(filtframe);
-                            }
-                            runOnUiThread(() -> {
-                                loading.setVisibility(View.INVISIBLE);
-                                wait.setVisibility(View.INVISIBLE);
-                                myVideoView.setVisibility(View.INVISIBLE);
-                                imageView.setVisibility((View.VISIBLE));
-                                imageView.setImageBitmap(filteredVideo.get(1));
-                            });
-                        }).start();
-                    }
-                    case 4: {
-                        Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-                    case 5: {
-                        Toast.makeText(getApplicationContext(), "High Pass", Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-                    case 6: {
-                        new Thread(() -> {
-                            for (int i = 0; i < framesVideo.size(); i++) {
-                                frame = framesVideo.get(i);
-                                Utils.bitmapToMat(frame, framemat);
-                                filtmat = rift(framemat, filter_strength);
-                                Utils.matToBitmap(filtmat, filtframe);
-                                filteredVideo.add(filtframe);
-                            }
-                            runOnUiThread(() -> {
-                                loading.setVisibility(View.INVISIBLE);
-                                wait.setVisibility(View.INVISIBLE);
-                                myVideoView.setVisibility(View.INVISIBLE);
-                                imageView.setVisibility((View.VISIBLE));
-                                imageView.setImageBitmap(filteredVideo.get(1));
-                            });
-                        }).start();
-                        break;
-                    }
-                    case 7: {
-                        Toast.makeText(getApplicationContext(), "Phase", Toast.LENGTH_SHORT).show();
-                        break;
+            //Checks if the image is processing, and if the value has changed
+            if (processing == 0) {
+                if (nowval != lastval) {
+                    startProcessing();
+                    switch (filter_pos) {
+                        //Sets up the loading / progress bar, creates threads to run specific filters
+                        //Then once done running progress bar dissappears and video ready
+                        case 1: {
+                            new Thread(() -> {
+                                Mat kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
+                                for (int i = 0; i < framesVideo.size(); i++) {
+                                    frame = framesVideo.get(i);
+                                    Utils.bitmapToMat(frame, framemat);
+                                    Imgproc.erode(framemat, filtmat, kernel);
+                                    Utils.matToBitmap(filtmat, filtframe);
+                                    filteredVideo.add(filtframe);
+                                }
+                                runOnUiThread(() -> {
+                                    myVideoView.setVisibility(View.INVISIBLE);
+                                    imageView.setVisibility((View.VISIBLE));
+                                    imageView.setImageBitmap(filteredVideo.get(1));
+                                    stopProcessing();
+                                });
+                            }).start();
+                            break;
+                        }
+                        case 2: {
+                            new Thread(() -> {
+                                Mat kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
+                                for (int i = 0; i < framesVideo.size(); i++) {
+                                    frame = framesVideo.get(i);
+                                    Utils.bitmapToMat(frame, framemat);
+                                    Imgproc.dilate(framemat, filtmat, kernel);
+                                    Utils.matToBitmap(filtmat, filtframe);
+                                    filteredVideo.add(filtframe);
+                                }
+                                runOnUiThread(() -> {
+                                    stopProcessing();
+                                    myVideoView.setVisibility(View.INVISIBLE);
+                                    imageView.setVisibility((View.VISIBLE));
+                                    imageView.setImageBitmap(filteredVideo.get(1));
+                                });
+                            }).start();
+                            break;
+                        }
+                        case 3: {
+                            new Thread(() -> {
+                                Size size = new Size(filter_strength, filter_strength);
+                                for (int i = 0; i < framesVideo.size(); i++) {
+                                    frame = framesVideo.get(i);
+                                    Utils.bitmapToMat(frame, framemat);
+                                    Imgproc.blur(framemat, filtmat, size);
+                                    Utils.matToBitmap(filtmat, filtframe);
+                                    filteredVideo.add(filtframe);
+                                }
+                                runOnUiThread(() -> {
+                                    stopProcessing();
+                                    myVideoView.setVisibility(View.INVISIBLE);
+                                    imageView.setVisibility((View.VISIBLE));
+                                    imageView.setImageBitmap(filteredVideo.get(1));
+                                });
+                            }).start();
+                        }
+                        case 4: {
+                            Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
+                            stopProcessing();
+                            break;
+                        }
+                        case 5: {
+                            Toast.makeText(getApplicationContext(), "High Pass", Toast.LENGTH_SHORT).show();
+                            stopProcessing();
+                            break;
+                        }
+                        case 6: {
+                            new Thread(() -> {
+                                for (int i = 0; i < framesVideo.size(); i++) {
+                                    frame = framesVideo.get(i);
+                                    Utils.bitmapToMat(frame, framemat);
+                                    filtmat = rift(framemat, filter_strength);
+                                    Utils.matToBitmap(filtmat, filtframe);
+                                    filteredVideo.add(filtframe);
+                                }
+                                runOnUiThread(() -> stopProcessing());
+                            }).start();
+                            break;
+                        }
+                        case 7: {
+                            Toast.makeText(getApplicationContext(), "Phase", Toast.LENGTH_SHORT).show();
+                            stopProcessing();
+                            break;
+                        }
                     }
                 }
-
-
             }
         }
     };
@@ -369,6 +371,20 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         filtmat = new Mat(frame.getHeight(), frame.getWidth(), CvType.CV_8UC4);
     }
 
+    //Function that initializes loading screen
+    public void startProcessing() {
+        loading.setVisibility(View.VISIBLE);
+        wait.setVisibility(View.VISIBLE);
+        processing = 1;
+    }
+
+    //Function that hides loading screen
+    public void stopProcessing() {
+        loading.setVisibility(View.INVISIBLE);
+        wait.setVisibility(View.INVISIBLE);
+        processing = 0;
+    }
+
     @Override
     //Code that will set up the screen and bars for specific filters
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -437,7 +453,6 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
             }
         }
     }
-
 }
 
 

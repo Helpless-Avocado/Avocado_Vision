@@ -32,20 +32,24 @@ import androidx.core.content.ContextCompat;
 
 public class CameraActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, AdapterView.OnItemSelectedListener {
 
+    //Final ints for permissions/Requests in this activity
     private static final int Camera_Perms = 100;
     private static final int Storage_Perms = 101;
-    private static final int VIDEO_REQUEST = 101;
+    private static final int VIDEO_REQUEST = 102;
     private android.net.Uri videoUri = null;
 
+    //Auxilary varaibles
     String[] colors = {"Filter Select", "Normal", "Grey Scale", "Jet", "Ocean", "Spring", "Parula", "Cool", "Twilight"};
     int color_selected;
     int pic_taken = 0;
     int counter = 0;
 
+    //Image Storage
     Mat image;
     Mat pic_mat;
     Bitmap picture;
 
+    //Open CV objects
     CameraBridgeViewBase cameraBridgeViewBase;
     BaseLoaderCallback baseLoaderCallback;
 
@@ -57,6 +61,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         //Checking if Permissions are granted
         checkPermission(Manifest.permission.CAMERA, Camera_Perms);
 
+        //Button for Taking Picutre
         Button takepic = findViewById(R.id.Picture);
 
         //Code for the Dropdown
@@ -71,6 +76,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         cameraBridgeViewBase.setVisibility(SurfaceView.VISIBLE);
         cameraBridgeViewBase.setCvCameraViewListener(this);
 
+        //Code to take picture and go to picture editing
         takepic.setOnClickListener(v -> {
             checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, Storage_Perms);
             //Only triggers if a frame has been captured
@@ -101,6 +107,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
             }
         });
 
+        //Connection to the OpenCV camera methodology
         baseLoaderCallback = new BaseLoaderCallback(this) {
             @Override
             public void onManagerConnected(int status) {
@@ -123,6 +130,8 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     }
 
     @Override
+    //If Code that constantly displays the camera frame to the screen.
+    //Can apply filters to these mats along the way based on input
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         image = inputFrame.rgba();
         counter++;
@@ -163,8 +172,8 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         }
     }
 
-
     @Override
+    //If resumed, check with camera, and make sure that it can restart
     protected void onResume() {
         super.onResume();
         pic_taken = 0;
@@ -177,6 +186,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     }
 
     @Override
+    //If paused, disable camera.
     protected void onPause() {
         super.onPause();
         pic_taken = 0;
@@ -187,6 +197,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     }
 
     @Override
+    //If destroyed, disable camera.
     protected void onDestroy() {
         super.onDestroy();
         if (cameraBridgeViewBase != null) {
@@ -226,6 +237,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     }
 
     @Override
+    //Tells which filter was selected
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         color_selected = position;
     }
@@ -246,31 +258,21 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         }
     }
 
-    //if video is recorded successfully videoUri is saved and showImage() is called
+    //if video is recorded successfully videoUri is saved and playVideo() is called
     @Override
     protected void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == VIDEO_REQUEST && resultCode == RESULT_OK) {
             videoUri = data.getData();
-            toImage();
             playVideo();
-
         }
     }
 
-    //sends video data to next activity to convert to image
-    public void toImage() {
-        Intent intent = new Intent(this, VideoToFrameActivity.class);
-        intent.putExtra("videoUri", videoUri.toString());
-        startActivity(intent);
-    }
-
-    public void playVideo()
-    {
+    //sends video data to next activity to apply filters
+    public void playVideo() {
         Intent playIntent = new Intent(this, VideoToFrameActivity.class);
         playIntent.putExtra("videoUri", videoUri.toString());
         startActivity(playIntent);
-
     }
 }
 

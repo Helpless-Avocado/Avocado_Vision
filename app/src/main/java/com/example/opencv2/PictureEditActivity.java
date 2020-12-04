@@ -56,12 +56,13 @@ import static org.opencv.core.Core.split;
 import static org.opencv.imgproc.Imgproc.circle;
 
 public class PictureEditActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+    //Variables for Control and text
     String[] filternames = {"Original", "Pixelate", "RGB Manipulation", "Brightness", "Erosion", "Dilate", "Blur", "Low Pass", "High Pass", "Rift", "Phase"};
     int filter_pos, filter_strength, redstrength, bluestrength, greenstrength;
-    Bitmap Image = null;
-    Bitmap finalImage = null;
-    Bitmap inputimage = null;
     int reset;
+    int processing = 0;
+
+    //View Variables
     ImageView screenview;
     ProgressBar loading;
     TextView progresslabel;
@@ -69,6 +70,11 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
     SeekBar strength;
     SeekBar Red, Green, Blue;
     TextView rlabel, blabel, glabel;
+
+    //Image Variables
+    Bitmap Image = null;
+    Bitmap finalImage = null;
+    Bitmap inputimage = null;
     Mat OpenCVFrame;
     Mat ToScreen;
     Mat kernel;
@@ -82,51 +88,53 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // updated continuously as the user slides the thumb
-            switch (filter_pos) {
-                case 1: {
-                    progresslabel.setText("Pixelation Factor: " + (progress + 1));
-                    filter_strength = progress + 1;
-                    break;
-                }
-                case 3: {
-                    progresslabel.setText("Brightness: " + (progress - 100));
-                    filter_strength = progress;
-                    break;
-                }
-                case 4: {
-                    progresslabel.setText("Erosion Factor: " + (progress + 1));
-                    filter_strength = progress + 1;
-                    break;
-                }
-                case 5: {
-                    progresslabel.setText("Dilation Factor: " + (progress + 1));
-                    filter_strength = progress + 1;
-                    break;
-                }
-                case 6: {
-                    progresslabel.setText("Blur Strength: " + (progress));
-                    filter_strength = progress + 1;
-                    break;
-                }
-                case 7: {
-                    progresslabel.setText("Low Pass Strength: " + (progress));
-                    filter_strength = progress;
-                    break;
-                }
-                case 8: {
-                    progresslabel.setText("High Pass Strength: " + (progress));
-                    filter_strength = progress;
-                    break;
-                }
-                case 9: {
-                    progresslabel.setText("Rift Magnitude: " + (progress + 1));
-                    filter_strength = progress + 1;
-                    break;
-                }
-                case 10: {
-                    progresslabel.setText("Phase Factor: " + (progress));
-                    filter_strength = progress;
-                    break;
+            if (processing == 0) {
+                switch (filter_pos) {
+                    case 1: {
+                        progresslabel.setText("Pixelation Factor: " + (progress + 1));
+                        filter_strength = progress + 1;
+                        break;
+                    }
+                    case 3: {
+                        progresslabel.setText("Brightness: " + (progress - 100));
+                        filter_strength = progress;
+                        break;
+                    }
+                    case 4: {
+                        progresslabel.setText("Erosion Factor: " + (progress + 1));
+                        filter_strength = progress + 1;
+                        break;
+                    }
+                    case 5: {
+                        progresslabel.setText("Dilation Factor: " + (progress + 1));
+                        filter_strength = progress + 1;
+                        break;
+                    }
+                    case 6: {
+                        progresslabel.setText("Blur Strength: " + (progress));
+                        filter_strength = progress + 1;
+                        break;
+                    }
+                    case 7: {
+                        progresslabel.setText("Low Pass Strength: " + (progress));
+                        filter_strength = progress;
+                        break;
+                    }
+                    case 8: {
+                        progresslabel.setText("High Pass Strength: " + (progress));
+                        filter_strength = progress;
+                        break;
+                    }
+                    case 9: {
+                        progresslabel.setText("Rift Magnitude: " + (progress + 1));
+                        filter_strength = progress + 1;
+                        break;
+                    }
+                    case 10: {
+                        progresslabel.setText("Phase Factor: " + (progress));
+                        filter_strength = progress;
+                        break;
+                    }
                 }
             }
         }
@@ -139,209 +147,160 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
 
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
-            //Called after the user finishes moving the SeekBar
+            //Called after the user finishes moving the SeekBar only if not processing
             nowval = filter_strength;
-            if (nowval != lastval) {
-                loading.setVisibility(View.VISIBLE);
-                wait.setVisibility(View.VISIBLE);
-                //Sets up the loading / progress bar, creates threads to run specific filters
-                //Then once done running progress bar dissappears and image is shown
-                switch (filter_pos) {
-                    default:
-                        break;
-                    case 1: {
-                        //Pixelate
-                        new Thread(() -> {
-                            finalImage = pixelate(inputimage, filter_strength);
-                            runOnUiThread(() -> {
-                                loading.setVisibility(View.INVISIBLE);
-                                screenview.setImageBitmap(finalImage);
-                                wait.setVisibility(View.INVISIBLE);
-                            });
-                            reset = 1;
-                        }).start();
-                        break;
-                    }
-                    case 3: {
-                        //Brighten/Darken
-                        new Thread(() -> {
-                            finalImage = brightness(inputimage, filter_strength);
-                            runOnUiThread(() -> {
-                                loading.setVisibility(View.INVISIBLE);
-                                screenview.setImageBitmap(finalImage);
-                                wait.setVisibility(View.INVISIBLE);
-                            });
-                            reset = 1;
-                        }).start();
-                        break;
-                    }
-                    case 4: {
-                        //Erode
-                        if (reset == 0) {
+            if (processing == 0) {
+                if (nowval != lastval) {
+                    startProcessing();
+                    //Sets up the loading / progress bar, creates threads to run specific filters
+                    //Then once done running progress bar dissappears and image is shown
+                    switch (filter_pos) {
+                        default:
+                            break;
+                        case 1: {
+                            //Pixelate
                             new Thread(() -> {
-                                Image = reset(Image);
-                                runOnUiThread(() -> {
-                                    loading.setVisibility(View.INVISIBLE);
-                                    wait.setVisibility(View.INVISIBLE);
-                                });
+                                finalImage = pixelate(inputimage, filter_strength);
+                                runOnUiThread(() -> stopProcessing());
                                 reset = 1;
                             }).start();
-                        } else {
-                            new Thread(() -> {
-                                kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
-                                Imgproc.erode(OpenCVFrame, ToScreen, kernel);
-                                Utils.matToBitmap(ToScreen, finalImage);
-                                runOnUiThread(() -> {
-                                    loading.setVisibility(View.INVISIBLE);
-                                    wait.setVisibility(View.INVISIBLE);
-                                });
-                            }).start();
+                            break;
                         }
-                        break;
-                    }
-                    case 5: {
-                        //Dilate
-                        if (reset == 0) {
+                        case 3: {
+                            //Brighten/Darken
                             new Thread(() -> {
-                                Image = reset(Image);
-                                runOnUiThread(() -> {
-                                    loading.setVisibility(View.INVISIBLE);
-                                    wait.setVisibility(View.INVISIBLE);
-                                });
+                                finalImage = brightness(inputimage, filter_strength);
+                                runOnUiThread(() -> stopProcessing());
                                 reset = 1;
                             }).start();
-                        } else {
-                            new Thread(() -> {
-                                kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
-                                Imgproc.dilate(OpenCVFrame, ToScreen, kernel);
-                                Utils.matToBitmap(ToScreen, finalImage);
-                                runOnUiThread(() -> {
-                                    loading.setVisibility(View.INVISIBLE);
-                                    wait.setVisibility(View.INVISIBLE);
-                                });
-                            }).start();
+                            break;
                         }
-                        break;
-                    }
-                    case 6: {
-                        //Blur
-                        if (reset == 0) {
-                            new Thread(() -> {
-                                Image = reset(Image);
-                                runOnUiThread(() -> {
-                                    loading.setVisibility(View.INVISIBLE);
-                                    wait.setVisibility(View.INVISIBLE);
-                                });
-                                reset = 1;
-                            }).start();
-                        } else {
-                            new Thread(() -> {
-                                Imgproc.blur(OpenCVFrame, ToScreen, new Size(filter_strength, filter_strength));
-                                Utils.matToBitmap(ToScreen, finalImage);
-                                runOnUiThread(() -> {
-                                    loading.setVisibility(View.INVISIBLE);
-                                    wait.setVisibility(View.INVISIBLE);
-                                });
-                            }).start();
+                        case 4: {
+                            //Erode
+                            if (reset == 0) {
+                                new Thread(() -> {
+                                    Image = reset(Image);
+                                    runOnUiThread(() -> stopProcessing());
+                                    reset = 1;
+                                }).start();
+                            } else {
+                                new Thread(() -> {
+                                    kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
+                                    Imgproc.erode(OpenCVFrame, ToScreen, kernel);
+                                    Utils.matToBitmap(ToScreen, finalImage);
+                                    runOnUiThread(() -> stopProcessing());
+                                }).start();
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case 7: {
-                        //Lowpass Filter
-                        if (reset == 0) {
-                            new Thread(() -> {
-                                Image = reset(Image);
-                                runOnUiThread(() -> {
-                                    loading.setVisibility(View.INVISIBLE);
-                                    wait.setVisibility(View.INVISIBLE);
-                                });
-                                reset = 1;
-                            }).start();
-                        } else {
-                            new Thread(() -> {
-                                //Low Pass Filter. Input is OpenCVFrame and output should be ToScreen
-                                runOnUiThread(() -> {
-                                    loading.setVisibility(View.INVISIBLE);
-                                    wait.setVisibility(View.INVISIBLE);
-                                });
-                            }).start();
-                            Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
+                        case 5: {
+                            //Dilate
+                            if (reset == 0) {
+                                new Thread(() -> {
+                                    Image = reset(Image);
+                                    runOnUiThread(() -> stopProcessing());
+                                    reset = 1;
+                                }).start();
+                            } else {
+                                new Thread(() -> {
+                                    kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
+                                    Imgproc.dilate(OpenCVFrame, ToScreen, kernel);
+                                    Utils.matToBitmap(ToScreen, finalImage);
+                                    runOnUiThread(() -> stopProcessing());
+                                }).start();
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case 8: {
-                        //HighPass Filter
-                        if (reset == 0) {
-                            new Thread(() -> {
-                                Image = reset(Image);
-                                runOnUiThread(() -> {
-                                    loading.setVisibility(View.INVISIBLE);
-                                    wait.setVisibility(View.INVISIBLE);
-                                });
-                                reset = 1;
-                            }).start();
-                        } else {
-                            new Thread(() -> {
-                                //High Pass Filter. Input is OpenCVFrame and output should be ToScreen
-                                ToScreen = highpass(OpenCVFrame, filter_strength);
-                                Utils.matToBitmap(ToScreen, finalImage);
-                                runOnUiThread(() -> {
-                                    loading.setVisibility(View.INVISIBLE);
-                                    wait.setVisibility(View.INVISIBLE);
-                                });
-                            }).start();
+                        case 6: {
+                            //Blur
+                            if (reset == 0) {
+                                new Thread(() -> {
+                                    Image = reset(Image);
+                                    runOnUiThread(() -> stopProcessing());
+                                    reset = 1;
+                                }).start();
+                            } else {
+                                new Thread(() -> {
+                                    Imgproc.blur(OpenCVFrame, ToScreen, new Size(filter_strength, filter_strength));
+                                    Utils.matToBitmap(ToScreen, finalImage);
+                                    runOnUiThread(() -> stopProcessing());
+                                }).start();
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case 9: {
-                        //Rift
-                        if (reset == 0) {
-                            new Thread(() -> {
-                                Image = reset(Image);
-                                runOnUiThread(() -> {
-                                    loading.setVisibility(View.INVISIBLE);
-                                    wait.setVisibility(View.INVISIBLE);
-                                });
-                                reset = 1;
-                            }).start();
-                        } else {
-                            new Thread(() -> {
-                                //Rift. Input is OpenCVFrame and output should be ToScreen
-                                ToScreen = rift(OpenCVFrame, filter_strength);
-                                Utils.matToBitmap(ToScreen, finalImage);
-                                runOnUiThread(() -> {
-                                    loading.setVisibility(View.INVISIBLE);
-                                    wait.setVisibility(View.INVISIBLE);
-                                });
-                            }).start();
+                        case 7: {
+                            //Lowpass Filter
+                            if (reset == 0) {
+                                new Thread(() -> {
+                                    Image = reset(Image);
+                                    runOnUiThread(() -> stopProcessing());
+                                    reset = 1;
+                                }).start();
+                            } else {
+                                new Thread(() -> {
+                                    //Low Pass Filter. Input is OpenCVFrame and output should be ToScreen
+                                    runOnUiThread(() -> stopProcessing());
+                                }).start();
+                                Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case 10: {
-                        //Phase
-                        if (reset == 0) {
-                            new Thread(() -> {
-                                Image = reset(Image);
-                                runOnUiThread(() -> {
-                                    loading.setVisibility(View.INVISIBLE);
-                                    wait.setVisibility(View.INVISIBLE);
-                                });
-                                reset = 1;
-                            }).start();
-                        } else {
-                            new Thread(() -> {
-                                //Phase. Input is OpenCVFrame and output should be ToScreen
-                                runOnUiThread(() -> {
-                                    loading.setVisibility(View.INVISIBLE);
-                                    wait.setVisibility(View.INVISIBLE);
-                                });
-                            }).start();
-                            Toast.makeText(getApplicationContext(), "Phase", Toast.LENGTH_SHORT).show();
+                        case 8: {
+                            //HighPass Filter
+                            if (reset == 0) {
+                                new Thread(() -> {
+                                    Image = reset(Image);
+                                    runOnUiThread(() -> stopProcessing());
+                                    reset = 1;
+                                }).start();
+                            } else {
+                                new Thread(() -> {
+                                    //High Pass Filter. Input is OpenCVFrame and output should be ToScreen
+                                    ToScreen = highpass(OpenCVFrame, filter_strength);
+                                    Utils.matToBitmap(ToScreen, finalImage);
+                                    runOnUiThread(() -> stopProcessing());
+                                }).start();
+                            }
+                            break;
                         }
-                        break;
+                        case 9: {
+                            //Rift
+                            if (reset == 0) {
+                                new Thread(() -> {
+                                    Image = reset(Image);
+                                    runOnUiThread(() -> stopProcessing());
+                                    reset = 1;
+                                }).start();
+                            } else {
+                                new Thread(() -> {
+                                    //Rift. Input is OpenCVFrame and output should be ToScreen
+                                    ToScreen = rift(OpenCVFrame, filter_strength);
+                                    Utils.matToBitmap(ToScreen, finalImage);
+                                    runOnUiThread(() -> stopProcessing());
+                                }).start();
+                            }
+                            break;
+                        }
+                        case 10: {
+                            //Phase
+                            if (reset == 0) {
+                                new Thread(() -> {
+                                    Image = reset(Image);
+                                    runOnUiThread(() -> stopProcessing());
+                                    reset = 1;
+                                }).start();
+                            } else {
+                                new Thread(() -> {
+                                    //Phase. Input is OpenCVFrame and output should be ToScreen
+                                    runOnUiThread(() -> stopProcessing());
+                                }).start();
+                                Toast.makeText(getApplicationContext(), "Phase", Toast.LENGTH_SHORT).show();
+                            }
+                            break;
+                        }
                     }
+                    screenview.setImageBitmap(finalImage);
                 }
-                screenview.setImageBitmap(finalImage);
             }
         }
     };
@@ -354,9 +313,11 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         @SuppressLint("SetTextI18n")
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            // updated continuously as the user slides the thumb
-            redstrength = progress;
-            rlabel.setText("Red : " + progress + "%");
+            // updated continuously as the user slides the thumb if not processing
+            if (processing == 0) {
+                redstrength = progress;
+                rlabel.setText("Red : " + progress + "%");
+            }
         }
 
         @Override
@@ -369,18 +330,15 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         public void onStopTrackingTouch(SeekBar seekBar) {
             //When user stops, apply filter
             nowval = redstrength;
-            if (nowval != lastval) {
-                loading.setVisibility(View.VISIBLE);
-                wait.setVisibility(View.VISIBLE);
-                new Thread(() -> {
-                    finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
-                    runOnUiThread(() -> {
-                        loading.setVisibility(View.INVISIBLE);
-                        screenview.setImageBitmap(finalImage);
-                        wait.setVisibility(View.INVISIBLE);
-                    });
-                    reset = 1;
-                }).start();
+            if (processing == 0) {
+                if (nowval != lastval) {
+                    startProcessing();
+                    new Thread(() -> {
+                        finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
+                        runOnUiThread(() -> stopProcessing());
+                        reset = 1;
+                    }).start();
+                }
             }
         }
     };
@@ -391,14 +349,16 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         @SuppressLint("SetTextI18n")
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            // updated continuously as the user slides the thumb
-            greenstrength = progress;
-            glabel.setText("Green : " + progress + "%");
+            // updated continuously as the user slides the thumb while not processing
+            if (processing == 0) {
+                greenstrength = progress;
+                glabel.setText("Green : " + progress + "%");
+            }
         }
 
         @Override
         public void onStartTrackingTouch(SeekBar seekBar) {
-            // called when the user first touches the
+            // called when the user first touches the thumb
             lastval = greenstrength;
         }
 
@@ -406,18 +366,15 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         public void onStopTrackingTouch(SeekBar seekBar) {
             //When user stops, apply filter
             nowval = greenstrength;
-            if (nowval != lastval) {
-                loading.setVisibility(View.VISIBLE);
-                wait.setVisibility(View.VISIBLE);
-                new Thread(() -> {
-                    finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
-                    runOnUiThread(() -> {
-                        screenview.setImageBitmap(finalImage);
-                        loading.setVisibility(View.INVISIBLE);
-                        wait.setVisibility(View.INVISIBLE);
-                    });
-                    reset = 1;
-                }).start();
+            if (processing == 0) {
+                if (nowval != lastval) {
+                    startProcessing();
+                    new Thread(() -> {
+                        finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
+                        runOnUiThread(() -> stopProcessing());
+                        reset = 1;
+                    }).start();
+                }
             }
         }
     };
@@ -428,9 +385,11 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         @SuppressLint("SetTextI18n")
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            // updated continuously as the user slides the thumb
-            bluestrength = progress;
-            blabel.setText("Blue : " + progress + "%");
+            // updated continuously as the user slides the thumb while not processing
+            if (processing == 0) {
+                bluestrength = progress;
+                blabel.setText("Blue : " + progress + "%");
+            }
         }
 
         @Override
@@ -443,21 +402,33 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         public void onStopTrackingTouch(SeekBar seekBar) {
             //When user stops, apply filter
             nowval = bluestrength;
-            if (nowval != lastval) {
-                loading.setVisibility(View.VISIBLE);
-                wait.setVisibility(View.VISIBLE);
-                new Thread(() -> {
-                    finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
-                    runOnUiThread(() -> {
-                        screenview.setImageBitmap(finalImage);
-                        loading.setVisibility(View.INVISIBLE);
-                        wait.setVisibility(View.INVISIBLE);
-                    });
-                    reset = 1;
-                }).start();
+            if (processing == 0) {
+                if (nowval != lastval) {
+                    startProcessing();
+                    new Thread(() -> {
+                        finalImage = colorscale(inputimage, redstrength, greenstrength, bluestrength);
+                        runOnUiThread(() -> stopProcessing());
+                        reset = 1;
+                    }).start();
+                }
             }
         }
     };
+
+    //Function that initializes loading bar
+    public void startProcessing() {
+        loading.setVisibility(View.VISIBLE);
+        wait.setVisibility(View.VISIBLE);
+        processing = 1;
+    }
+
+    //Function that hides loading bar
+    public void stopProcessing() {
+        screenview.setImageBitmap(finalImage);
+        loading.setVisibility(View.INVISIBLE);
+        wait.setVisibility(View.INVISIBLE);
+        processing = 0;
+    }
 
     //Code to save the image to the gallery
     public static void addImageToGallery(final String filePath, final Context context) {
@@ -903,6 +874,18 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         });
     }
 
+    //Function that sets up 1 filter view
+    public void onefiltsetup() {
+        progresslabel.setVisibility(View.VISIBLE);
+        strength.setVisibility(View.VISIBLE);
+        rlabel.setVisibility((View.INVISIBLE));
+        glabel.setVisibility((View.INVISIBLE));
+        blabel.setVisibility((View.INVISIBLE));
+        Red.setVisibility((View.INVISIBLE));
+        Green.setVisibility((View.INVISIBLE));
+        Blue.setVisibility((View.INVISIBLE));
+    }
+
     //Code for telling which input the spinner has selected
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -911,7 +894,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         Utils.bitmapToMat(inputimage, OpenCVFrame);
         switch (filter_pos) {
             case 0: {
-                //Reshows Original image, hides all bars and text
                 progresslabel.setVisibility(View.INVISIBLE);
                 strength.setVisibility(View.INVISIBLE);
                 rlabel.setVisibility((View.INVISIBLE));
@@ -920,6 +902,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 Red.setVisibility((View.INVISIBLE));
                 Green.setVisibility((View.INVISIBLE));
                 Blue.setVisibility((View.INVISIBLE));
+                //Reshows Original image, hides all bars and text
                 finalImage = reset(Image);
                 reset = 1;
                 screenview.setImageBitmap(finalImage);
@@ -927,14 +910,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
             }
             case 1: {
                 //Sets up for Pixelation
-                progresslabel.setVisibility(View.VISIBLE);
-                strength.setVisibility(View.VISIBLE);
-                rlabel.setVisibility((View.INVISIBLE));
-                glabel.setVisibility((View.INVISIBLE));
-                blabel.setVisibility((View.INVISIBLE));
-                Red.setVisibility((View.INVISIBLE));
-                Green.setVisibility((View.INVISIBLE));
-                Blue.setVisibility((View.INVISIBLE));
+                onefiltsetup();
                 progresslabel.setText(R.string.ipixel);
                 strength.setMax(19);
                 strength.setProgress(0);
@@ -963,28 +939,14 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
             }
             case 3: {
                 //Sets up for Brighten/Darkening
-                progresslabel.setVisibility(View.VISIBLE);
-                strength.setVisibility(View.VISIBLE);
-                rlabel.setVisibility((View.INVISIBLE));
-                glabel.setVisibility((View.INVISIBLE));
-                blabel.setVisibility((View.INVISIBLE));
-                Red.setVisibility((View.INVISIBLE));
-                Green.setVisibility((View.INVISIBLE));
-                Blue.setVisibility((View.INVISIBLE));
+                onefiltsetup();
                 progresslabel.setText(R.string.ibrightness);
                 strength.setMax(200);
                 strength.setProgress(100);
                 break;
             }
             case 4: {
-                progresslabel.setVisibility(View.VISIBLE);
-                strength.setVisibility(View.VISIBLE);
-                rlabel.setVisibility((View.INVISIBLE));
-                glabel.setVisibility((View.INVISIBLE));
-                blabel.setVisibility((View.INVISIBLE));
-                Red.setVisibility((View.INVISIBLE));
-                Green.setVisibility((View.INVISIBLE));
-                Blue.setVisibility((View.INVISIBLE));
+                onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.iexpansion);
                 strength.setMax(49);
@@ -993,14 +955,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 break;
             }
             case 5: {
-                progresslabel.setVisibility(View.VISIBLE);
-                strength.setVisibility(View.VISIBLE);
-                rlabel.setVisibility((View.INVISIBLE));
-                glabel.setVisibility((View.INVISIBLE));
-                blabel.setVisibility((View.INVISIBLE));
-                Red.setVisibility((View.INVISIBLE));
-                Green.setVisibility((View.INVISIBLE));
-                Blue.setVisibility((View.INVISIBLE));
+                onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.idilation);
                 strength.setMax(49);
@@ -1008,14 +963,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 break;
             }
             case 6: {
-                progresslabel.setVisibility(View.VISIBLE);
-                strength.setVisibility(View.VISIBLE);
-                rlabel.setVisibility((View.INVISIBLE));
-                glabel.setVisibility((View.INVISIBLE));
-                blabel.setVisibility((View.INVISIBLE));
-                Red.setVisibility((View.INVISIBLE));
-                Green.setVisibility((View.INVISIBLE));
-                Blue.setVisibility((View.INVISIBLE));
+                onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.iblur);
                 strength.setMax(100);
@@ -1023,14 +971,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 break;
             }
             case 7: {
-                progresslabel.setVisibility(View.VISIBLE);
-                strength.setVisibility(View.VISIBLE);
-                rlabel.setVisibility((View.INVISIBLE));
-                glabel.setVisibility((View.INVISIBLE));
-                blabel.setVisibility((View.INVISIBLE));
-                Red.setVisibility((View.INVISIBLE));
-                Green.setVisibility((View.INVISIBLE));
-                Blue.setVisibility((View.INVISIBLE));
+                onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.ilowpass);
                 strength.setMax(90);
@@ -1038,14 +979,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 break;
             }
             case 8: {
-                progresslabel.setVisibility(View.VISIBLE);
-                strength.setVisibility(View.VISIBLE);
-                rlabel.setVisibility((View.INVISIBLE));
-                glabel.setVisibility((View.INVISIBLE));
-                blabel.setVisibility((View.INVISIBLE));
-                Red.setVisibility((View.INVISIBLE));
-                Green.setVisibility((View.INVISIBLE));
-                Blue.setVisibility((View.INVISIBLE));
+                onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.ihighpass);
                 strength.setMax(90);
@@ -1053,14 +987,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 break;
             }
             case 9: {
-                progresslabel.setVisibility(View.VISIBLE);
-                strength.setVisibility(View.VISIBLE);
-                rlabel.setVisibility((View.INVISIBLE));
-                glabel.setVisibility((View.INVISIBLE));
-                blabel.setVisibility((View.INVISIBLE));
-                Red.setVisibility((View.INVISIBLE));
-                Green.setVisibility((View.INVISIBLE));
-                Blue.setVisibility((View.INVISIBLE));
+                onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.irift);
                 strength.setMax(255);
@@ -1068,14 +995,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 break;
             }
             case 10: {
-                progresslabel.setVisibility(View.VISIBLE);
-                strength.setVisibility(View.VISIBLE);
-                rlabel.setVisibility((View.INVISIBLE));
-                glabel.setVisibility((View.INVISIBLE));
-                blabel.setVisibility((View.INVISIBLE));
-                Red.setVisibility((View.INVISIBLE));
-                Green.setVisibility((View.INVISIBLE));
-                Blue.setVisibility((View.INVISIBLE));
+                onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.iphase);
                 strength.setMax(90);
