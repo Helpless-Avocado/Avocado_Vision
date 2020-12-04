@@ -29,7 +29,9 @@
         <activity
             android:name=".PictureEditActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".VideoToFrameActivity"/>
+        <activity
+            android:name=".VideoToFrameActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".CameraActivity"
             android:screenOrientation="portrait">

@@ -73,7 +73,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
     Mat ToScreen;
     Mat kernel;
 
-    //Code that controls the sliders
+    //Code that controls the slider for the main functions
     SeekBar.OnSeekBarChangeListener strengthListener = new SeekBar.OnSeekBarChangeListener() {
 
         int nowval, lastval;
@@ -139,15 +139,18 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
 
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
-            // called after the user finishes moving the SeekBar
+            //Called after the user finishes moving the SeekBar
             nowval = filter_strength;
             if (nowval != lastval) {
                 loading.setVisibility(View.VISIBLE);
                 wait.setVisibility(View.VISIBLE);
+                //Sets up the loading / progress bar, creates threads to run specific filters
+                //Then once done running progress bar dissappears and image is shown
                 switch (filter_pos) {
                     default:
                         break;
                     case 1: {
+                        //Pixelate
                         new Thread(() -> {
                             finalImage = pixelate(inputimage, filter_strength);
                             runOnUiThread(() -> {
@@ -173,6 +176,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                         break;
                     }
                     case 4: {
+                        //Erode
                         if (reset == 0) {
                             new Thread(() -> {
                                 Image = reset(Image);
@@ -196,6 +200,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                         break;
                     }
                     case 5: {
+                        //Dilate
                         if (reset == 0) {
                             new Thread(() -> {
                                 Image = reset(Image);
@@ -219,6 +224,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                         break;
                     }
                     case 6: {
+                        //Blur
                         if (reset == 0) {
                             new Thread(() -> {
                                 Image = reset(Image);
@@ -241,6 +247,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                         break;
                     }
                     case 7: {
+                        //Lowpass Filter
                         if (reset == 0) {
                             new Thread(() -> {
                                 Image = reset(Image);
@@ -263,6 +270,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                         break;
                     }
                     case 8: {
+                        //HighPass Filter
                         if (reset == 0) {
                             new Thread(() -> {
                                 Image = reset(Image);
@@ -286,6 +294,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                         break;
                     }
                     case 9: {
+                        //Rift
                         if (reset == 0) {
                             new Thread(() -> {
                                 Image = reset(Image);
@@ -309,6 +318,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                         break;
                     }
                     case 10: {
+                        //Phase
                         if (reset == 0) {
                             new Thread(() -> {
                                 Image = reset(Image);
@@ -335,6 +345,8 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
             }
         }
     };
+
+    //Code for the 3 sliders for RGB
     SeekBar.OnSeekBarChangeListener redListener = new SeekBar.OnSeekBarChangeListener() {
 
         int nowval, lastval;
@@ -355,6 +367,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
 
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
+            //When user stops, apply filter
             nowval = redstrength;
             if (nowval != lastval) {
                 loading.setVisibility(View.VISIBLE);
@@ -391,6 +404,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
 
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
+            //When user stops, apply filter
             nowval = greenstrength;
             if (nowval != lastval) {
                 loading.setVisibility(View.VISIBLE);
@@ -427,6 +441,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
 
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
+            //When user stops, apply filter
             nowval = bluestrength;
             if (nowval != lastval) {
                 loading.setVisibility(View.VISIBLE);
@@ -602,43 +617,76 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         return newbit;
     }
 
+    //Rift Function Written by Aidan
     public static Mat rift(Mat img, int mag) {
+
         List<Mat> chans = new ArrayList<>();
+
         //split the channels in order to manipulate them
         split(img, chans);
+
+        //Creating Mats to hold various transforms
         Mat curim;
         Mat curdft = new Mat(img.size(), CvType.CV_32FC4);
         Mat padded = new Mat(img.size(), CvType.CV_32FC4);
         Mat curidft = new Mat(img.size(), CvType.CV_32FC4);
+
+        //Creating a list to hold the transformed image channels
         List<Mat> newchans = new ArrayList<>();
+
+        //Getting size for DFT
         int m = getOptimalDFTSize(img.rows());
         int n = getOptimalDFTSize(img.cols());
+
+        //Looping through the 3 color channels of the image
         for (int i = 0; i < 3; i++) {
             curim = chans.get(i);
             // on the border add zero values
             copyMakeBorder(curim, padded, 0, m - curim.rows(), 0, n - curim.cols(), BORDER_CONSTANT, Scalar.all(0));
+
+            //Create the channels needed to perform DFT
             List<Mat> planes = new ArrayList<>();
             planes.add(padded);
             planes.add(Mat.zeros(padded.size(), padded.type()));
-            merge(planes, curdft);    // Add to the expanded another plane with zeros
+
+            //Add to the expanded another plane with zeros
+            merge(planes, curdft);
+
+            //Convert to type as safeguard
             curdft.convertTo(curdft, CvType.CV_32FC4);
-            dft(curdft, curdft);          // this way the result may fit in the source matrix
-            split(curdft, planes);       // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
-            planes.get(0).setTo(new Scalar(mag)); // set the real part to 1
+
+            // this way the result may fit in the source matrix
+            dft(curdft, curdft);
+
+            // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
+            split(curdft, planes);
+
+            // set the real part to the magnitude input
+            planes.get(0).setTo(new Scalar(mag));
+
+            //Merging the planes together into one new channel
             merge(planes, curdft);
             dft(curdft, curidft, DFT_INVERSE);
             split(curidft, planes);
             magnitude(planes.get(0), planes.get(1), curidft);
             normalize(curidft, curidft, 0, 1, NORM_MINMAX);
+
+            //Adding this new channel to the list
             newchans.add(curidft);
         }
+
+        //Creating a mat that has original input type and size
         Mat rifted = new Mat(img.size(), img.type());
+
         //then merge them back
         merge(newchans, rifted);
+
+        //Convert to type for display then return
         rifted = convert4return(rifted);
         return rifted;
     }
 
+    //Function to convert specific filters into values for bitmap display
     public static Mat convert4return(Mat m) {
         m.convertTo(m, CvType.CV_8UC4, 255);
         return m;
@@ -669,7 +717,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         q2.copyTo(q1);
         tmp.copyTo(q2);
     }
-
 
     public static Mat highpass(Mat img, int radius) {
         int m = getOptimalDFTSize(img.rows());
@@ -741,8 +788,10 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.picture_main);
+
         //Resetting Reset
         reset = 0;
+
         //Load in bitmap info
         String filename = getIntent().getStringExtra("image");
         try {
@@ -752,11 +801,14 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         //Create a copy bitmap which will have changes applied to it
         finalImage = Image;
 
+        //Set up Mats for Open CV
         OpenCVFrame = new Mat(Image.getHeight(), Image.getWidth(), CvType.CV_8UC4);
         ToScreen = new Mat(Image.getHeight(), Image.getWidth(), CvType.CV_8UC4);
+
         //Preliminary Code for the dropdown
         Spinner image_filters = findViewById(R.id.image_filters);
         ArrayAdapter<String> filtadapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, filternames);
@@ -831,6 +883,8 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
             Date currentTime = Calendar.getInstance().getTime();
             String newfilename = currentTime.toString();
             File file = new File(path, newfilename + ".png");
+
+            //If successfully saved, shows filepath, otherwise shows error
             try {
                 output = new FileOutputStream(file);
 
@@ -838,16 +892,15 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 finalImage.compress(Bitmap.CompressFormat.PNG, 100, output);
                 output.flush();
                 output.close();
-
                 Toast.makeText(getApplicationContext(), "File Successfully Saved to" + path.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+
+                //Adds the file to gallery
+                addImageToGallery(file.getAbsolutePath(), this);
             } catch (Exception e) {
                 Toast.makeText(getApplicationContext(), "File Not Successfully Saved", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
-
-            addImageToGallery(file.getAbsolutePath(), this);
         });
-
     }
 
     //Code for telling which input the spinner has selected

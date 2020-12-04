@@ -30,7 +30,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, AdapterView.OnItemSelectedListener {
+public class CameraActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, AdapterView.OnItemSelectedListener {
 
     private static final int Camera_Perms = 100;
     private static final int Storage_Perms = 101;
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.camera_main);
 
         //Checking if Permissions are granted
         checkPermission(Manifest.permission.CAMERA, Camera_Perms);
@@ -207,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             picture.recycle();
 
             //Transfer file name over, as the 2nd activity starts up
-            Intent in1 = new Intent(this, MainActivity2.class);
+            Intent in1 = new Intent(this, PictureEditActivity.class);
             in1.putExtra("image", filename);
             startActivity(in1);
         } catch (Exception e) {
@@ -218,9 +218,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     // Function to check and request permission
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
-        if (ContextCompat.checkSelfPermission(MainActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, requestCode);
-            if (ContextCompat.checkSelfPermission(MainActivity.this, permission) == PackageManager.PERMISSION_DENIED)
+        if (ContextCompat.checkSelfPermission(CameraActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(CameraActivity.this, new String[]{permission}, requestCode);
+            if (ContextCompat.checkSelfPermission(CameraActivity.this, permission) == PackageManager.PERMISSION_DENIED)
                 Toast.makeText(getApplicationContext(), "You Need to Grant Permissions for this app to work", Toast.LENGTH_SHORT).show();
         }
     }
@@ -257,7 +257,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         }
     }
-
 
     //sends video data to next activity to convert to image
     public void toImage() {
