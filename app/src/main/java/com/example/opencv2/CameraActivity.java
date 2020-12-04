@@ -30,16 +30,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-public class CameraActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, AdapterView.OnItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, AdapterView.OnItemSelectedListener {
 
     private static final int Camera_Perms = 100;
     private static final int Storage_Perms = 101;
+    private static final int VIDEO_REQUEST = 101;
+    private android.net.Uri videoUri = null;
 
     String[] colors = {"Filter Select", "Normal", "Grey Scale", "Jet", "Ocean", "Spring", "Parula", "Cool", "Twilight"};
     int color_selected;
     int pic_taken = 0;
     int counter = 0;
-    int storperms, camperms;
+
     Mat image;
     Mat pic_mat;
     Bitmap picture;
@@ -50,7 +52,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.camera_main);
+        setContentView(R.layout.activity_main);
 
         //Checking if Permissions are granted
         checkPermission(Manifest.permission.CAMERA, Camera_Perms);
@@ -71,35 +73,31 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
 
         takepic.setOnClickListener(v -> {
             checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, Storage_Perms);
-            if (storperms == 0) {
-                Toast.makeText(getApplicationContext(), "You Need to Grant Storage Permissions for this app to work", Toast.LENGTH_SHORT).show();
-            } else {
-                //Only triggers if a frame has been captured
-                if (counter > 0) {
-                    //Updates images and stops the feed
-                    pic_mat = image;
-                    pic_taken = 1;
+            //Only triggers if a frame has been captured
+            if (counter > 0) {
+                //Updates images and stops the feed
+                pic_mat = image;
+                pic_taken = 1;
 
-                    //Covert to correct typing
-                    if ((pic_mat.type() != CvType.CV_8UC4) && (pic_mat.type() != CvType.CV_8UC1) && (pic_mat.type() != CvType.CV_8UC4)) {
-                        pic_mat.convertTo(pic_mat, CvType.CV_8UC4);
-                    }
-
-                    //Convert the mat to a bitmap
-                    picture = Bitmap.createBitmap(pic_mat.rows(), pic_mat.cols(), Bitmap.Config.ARGB_8888);
-
-                    //Need to rotate the bitmap 90 degrees to match the orientation of the mat.
-                    Matrix matrix = new Matrix();
-                    matrix.postRotate(90);
-                    picture = Bitmap.createBitmap(picture, 0, 0, picture.getWidth(), picture.getHeight(), matrix, true);
-                    Utils.matToBitmap(pic_mat, picture);
-
-                    //Can rotate 90 again to restore back to regular orientation
-                    picture = Bitmap.createBitmap(picture, 0, 0, picture.getWidth(), picture.getHeight(), matrix, true);
-
-                    //Code to call a new activity which will send the bitmap over
-                    openNewActivity();
+                //Covert to correct typing
+                if ((pic_mat.type() != CvType.CV_8UC4) && (pic_mat.type() != CvType.CV_8UC1) && (pic_mat.type() != CvType.CV_8UC4)) {
+                    pic_mat.convertTo(pic_mat, CvType.CV_8UC4);
                 }
+
+                //Convert the mat to a bitmap
+                picture = Bitmap.createBitmap(pic_mat.rows(), pic_mat.cols(), Bitmap.Config.ARGB_8888);
+
+                //Need to rotate the bitmap 90 degrees to match the orientation of the mat.
+                Matrix matrix = new Matrix();
+                matrix.postRotate(90);
+                picture = Bitmap.createBitmap(picture, 0, 0, picture.getWidth(), picture.getHeight(), matrix, true);
+                Utils.matToBitmap(pic_mat, picture);
+
+                //Can rotate 90 again to restore back to regular orientation
+                picture = Bitmap.createBitmap(picture, 0, 0, picture.getWidth(), picture.getHeight(), matrix, true);
+
+                //Code to call a new activity which will send the bitmap over
+                openNewActivity();
             }
         });
 
@@ -198,7 +196,6 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
 
     //Function to create a new activity
     public void openNewActivity() {
-
         try {
             //Write bitmap to a app_specific folder
             String filename = "bitmap.png";
@@ -210,7 +207,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
             picture.recycle();
 
             //Transfer file name over, as the 2nd activity starts up
-            Intent in1 = new Intent(this, PictureEditActivity.class);
+            Intent in1 = new Intent(this, MainActivity2.class);
             in1.putExtra("image", filename);
             startActivity(in1);
         } catch (Exception e) {
@@ -221,23 +218,10 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     // Function to check and request permission
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
-        if (ContextCompat.checkSelfPermission(CameraActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
-            if (requestCode == 100) {
-                camperms = 0;
-            }
-            if (requestCode == 101) {
-                storperms = 0;
-            }
-            ActivityCompat.requestPermissions(CameraActivity.this, new String[]{permission}, requestCode);
-            if (ContextCompat.checkSelfPermission(CameraActivity.this, permission) == PackageManager.PERMISSION_DENIED)
+        if (ContextCompat.checkSelfPermission(MainActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, requestCode);
+            if (ContextCompat.checkSelfPermission(MainActivity.this, permission) == PackageManager.PERMISSION_DENIED)
                 Toast.makeText(getApplicationContext(), "You Need to Grant Permissions for this app to work", Toast.LENGTH_SHORT).show();
-        } else {
-            if (requestCode == 100) {
-                camperms = 1;
-            }
-            if (requestCode == 101) {
-                storperms = 1;
-            }
         }
     }
 
@@ -250,5 +234,45 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     public void onNothingSelected(AdapterView<?> parent) {
         color_selected = 0;
     }
+
+
+    //when button is clicked built-in camera interface is opened
+    public void takeVideo (View view) {
+        cameraBridgeViewBase.disableView();
+        Intent videoIntent = new Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE);
+
+        if (videoIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(videoIntent, VIDEO_REQUEST);
+        }
+    }
+
+    //if video is recorded successfully videoUri is saved and showImage() is called
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == VIDEO_REQUEST && resultCode == RESULT_OK) {
+            videoUri = data.getData();
+            toImage();
+            playVideo();
+
+        }
+    }
+
+
+    //sends video data to next activity to convert to image
+    public void toImage() {
+        Intent intent = new Intent(this, VideoToFrameActivity.class);
+        intent.putExtra("videoUri", videoUri.toString());
+        startActivity(intent);
+    }
+
+    public void playVideo()
+    {
+        Intent playIntent = new Intent(this, VideoToFrameActivity.class);
+        playIntent.putExtra("videoUri", videoUri.toString());
+        startActivity(playIntent);
+
+    }
 }
+
 
