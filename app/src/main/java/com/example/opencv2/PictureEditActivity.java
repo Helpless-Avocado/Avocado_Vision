@@ -119,7 +119,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                     break;
                 }
                 case 9: {
-                    progresslabel.setText("Rift: " + (progress + 1));
+                    progresslabel.setText("Rift Magnitude: " + (progress + 1));
                     filter_strength = progress + 1;
                     break;
                 }
@@ -305,7 +305,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                     wait.setVisibility(View.INVISIBLE);
                                 });
                             }).start();
-                            Toast.makeText(getApplicationContext(), "Rift", Toast.LENGTH_SHORT).show();
                         }
                         break;
                     }
@@ -1011,8 +1010,8 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 Blue.setVisibility((View.INVISIBLE));
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.irift);
-                strength.setMax(254);
-                strength.setProgress(1);
+                strength.setMax(255);
+                strength.setProgress(0);
                 break;
             }
             case 10: {

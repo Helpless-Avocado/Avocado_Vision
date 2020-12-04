@@ -16,7 +16,7 @@
     <string name="iblur">Blur Strength: 0</string>
     <string name="ilowpass">Low Pass Strength: 10</string>
     <string name="ihighpass">High Pass Strength: 10</string>
-    <string name="irift">Real of FT Scale: 1</string>
+    <string name="irift">Rift Magnitude: 1</string>
     <string name="iphase">Phase Factor: 0</string>
     <string name="please_wait">Please Wait</string>
 </resources>
