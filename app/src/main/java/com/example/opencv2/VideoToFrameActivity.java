@@ -1,6 +1,8 @@
 package com.example.opencv2;
 
+
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
@@ -17,23 +19,51 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
+import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
+import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
+import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
+import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
+
+import org.opencv.android.Utils;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import static com.github.hiteshsondhi88.libffmpeg.FFmpeg.getInstance;
 
 
 public class VideoToFrameActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
+
+    FFmpeg ffmpeg = getInstance(this);
+
     private android.net.Uri videoUri = null;
     ArrayList<Bitmap> framesVideo = new ArrayList<Bitmap>();
     ArrayList<Bitmap> filteredVideo = new ArrayList<Bitmap>();
 
-    String[] filternames = {"Original", "Pixelate", "Brightness", "Erosion", "Dilate", "Blur", "Low Pass", "High Pass", "Rift", "Phase"};
+    String[] filternames = {"Original", "Erosion", "Dilate", "Blur", "Low Pass", "High Pass", "Rift", "Phase"};
     int filter_pos, filter_strength;
     TextView progresslabel;
     SeekBar strength;
     Bitmap finalImage = null;
     Bitmap inputimage = null;
+    Mat OpenCVFrame;
+    Mat ToScreen;
+    Mat kernel;
     private VideoView myVideoView;
+
+
+
 
 
 
@@ -47,16 +77,8 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             // updated continuously as the user slides the thumb
             switch (filter_pos) {
-                case 1: {
-                    progresslabel.setText("Pixelation Factor: " + (progress + 1));
-                    filter_strength = progress + 1;
-                    break;
-                }
-                case 2: {
-                    progresslabel.setText("Brightness: " + (progress - 100));
-                    filter_strength = progress;
-                    break;
-                }
+
+
                 case 3: {
                     progresslabel.setText("Erosion Factor: " + (progress + 1));
                     filter_strength = progress + 1;
@@ -109,34 +131,21 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                 switch (filter_pos) {
                     default:
                         break;
-                    case 1: {
-                        for ()
-                            for(int i = 0; i<framesVideo.size(); i++) {
-                                inputimage = framesVideo.get(i);
-                                finalImage = pixelate(inputimage, filter_strength);
-                                filteredVideo.add(finalImage);
-                            }
 
-                        reset = 1;
+
+                    case 1: {
+
+                        for(int i=0; i<framesVideo.size(); i++) {
+                            inputimage = framesVideo.get(i);
+                            Utils.bitmapToMat(inputimage, OpenCVFrame);
+                            kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
+                            Imgproc.erode(OpenCVFrame, ToScreen, kernel);
+                            Utils.matToBitmap(ToScreen, finalImage);
+                            framesVideo.add(i,finalImage);
+                        }
                         break;
                     }
                     case 2: {
-                        //Brighten/Darken
-//                        finalImage = brightness(inputimage, filter_strength);
-//                        reset = 1;
-                        break;
-                    }
-                    case 3: {
-//                        if (reset == 0) {
-//                            Image = reset(Image);
-//                            reset = 1;
-//                        }
-//                        kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
-//                        Imgproc.erode(OpenCVFrame, ToScreen, kernel);
-//                        Utils.matToBitmap(ToScreen, finalImage);
-                        break;
-                    }
-                    case 4: {
 //                        if (reset == 0) {
 //                            Image = reset(Image);
 //                            reset = 1;
@@ -146,7 +155,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
 //                        Utils.matToBitmap(ToScreen, finalImage);
                         break;
                     }
-                    case 5: {
+                    case 3: {
 //                        if (reset == 0) {
 //                            Image = reset(Image);
 //                            reset = 1;
@@ -155,7 +164,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
 //                        Utils.matToBitmap(ToScreen, finalImage);
                         break;
                     }
-                    case 6: {
+                    case 4: {
 //                        if (reset == 0) {
 //                            Image = reset(Image);
 //                            reset = 1;
@@ -164,7 +173,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                         Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
                         break;
                     }
-                    case 7: {
+                    case 5: {
 //                        if (reset == 0) {
 //                            Image = reset(Image);
 //                            reset = 1;
@@ -173,7 +182,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                         Toast.makeText(getApplicationContext(), "High Pass", Toast.LENGTH_SHORT).show();
                         break;
                     }
-                    case 8: {
+                    case 6: {
 //                        if (reset == 0) {
 //                            Image = reset(Image);
 //                            reset = 1;
@@ -182,7 +191,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                         Toast.makeText(getApplicationContext(), "Rift", Toast.LENGTH_SHORT).show();
                         break;
                     }
-                    case 9: {
+                    case 7: {
 //                        if (reset == 0) {
 //                            Image = reset(Image);
 //                            reset = 1;
@@ -192,11 +201,51 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                         break;
                     }
                 }
+            }
+            makeVideo(framesVideo);
+        }
 
+    };
 
+    public void makeVideo(ArrayList<Bitmap> framesVideo) {
+
+        for (int i=0; i<framesVideo.size(); i++) {
+            try {
+                String filename = "frame" + Integer.toString(i) + ".png";
+                FileOutputStream stream = this.openFileOutput(filename, Context.MODE_PRIVATE);
+                framesVideo.get(i).compress(Bitmap.CompressFormat.PNG, 100, stream);
+                stream.close();
+                framesVideo.get(i).recycle();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
             }
         }
-    };
+
+        String[] cmd = new String[]{"-r", "10", "-f", "image2", "-s", "1920x1000", "-i", "frame%d.png", "-vcodec", "libx264", "-crf", "25", "-pix_fmt", "yuv420p", "test.mp4"};
+
+        try {
+            // to execute "ffmpeg -version" command you just need to pass "-version"
+            ffmpeg.execute(cmd, new ExecuteBinaryResponseHandler() {
+
+                @Override
+                public void onStart() {}
+
+                @Override
+                public void onProgress(String message) {}
+
+                @Override
+                public void onFailure(String message) {}
+
+                @Override
+                public void onSuccess(String message) {}
+
+                @Override
+                public void onFinish() {}
+            });
+        } catch (FFmpegCommandAlreadyRunningException e) {
+            // Handle if FFmpeg is already running
+        }
+    }
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
@@ -263,6 +312,27 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                 framesVideo.add(bitmap);
             }
         }
+
+
+
+        try {
+            ffmpeg.loadBinary(new LoadBinaryResponseHandler() {
+
+                @Override
+                public void onStart() {}
+
+                @Override
+                public void onFailure() {}
+
+                @Override
+                public void onSuccess() {}
+
+                @Override
+                public void onFinish() {}
+            });
+        } catch (FFmpegNotSupportedException e) {
+            // Handle if FFmpeg is not supported by device
+        }
     }
 
     @Override
@@ -280,24 +350,8 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
 //                view1.setImageBitmap(finalImage);
                 break;
             }
-            case 1: {
-                //Sets up for Pixelation
-                progresslabel.setVisibility(View.VISIBLE);
-                strength.setVisibility(View.VISIBLE);
-                progresslabel.setText(R.string.ipixel);
-                strength.setMax(19);
-                strength.setProgress(0);
-                break;
-            }
-            case 2: {
-                //Sets up for Brighten/Darkening
-                progresslabel.setVisibility(View.VISIBLE);
-                strength.setVisibility(View.VISIBLE);
-                progresslabel.setText(R.string.ibrightness);
-                strength.setMax(200);
-                strength.setProgress(100);
-                break;
-            }
+
+
             case 3: {
                 progresslabel.setVisibility(View.VISIBLE);
                 strength.setVisibility(View.VISIBLE);
@@ -365,51 +419,15 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         }
     }
 
-    public static Bitmap pixelate(Bitmap orig, int input) {
-
-        //Get Size of the bitmap that is being altered
-        int width = orig.getWidth();
-        int height = orig.getHeight();
-        Bitmap newbit = Bitmap.createBitmap(width, height, orig.getConfig());
-
-
-        //Go get center pixel for pixelation
-        int pixvalue;
-
-        for (int i = 0; i < width; i = i + input) {
-            for (int j = 0; j < height; j = j + input) {
-
-                //Get values of RGBA from bitmap pixel that will be expanded
-                pixvalue = orig.getPixel(i, j);
-
-                //Now loop that will fill out the pixel to extents
-                for (int k = 0; k < input; k++) {
-                    for (int l = 0; l < input; l++) {
-                        if (!(((i + k) >= width) || ((j + l) >= height))) {
-                            newbit.setPixel((i + k), (j + l), pixvalue);
-                        }
-                    }
-                }
-            }
-        }
-        return newbit;
-    }
-
-
-
-
-
-
-
-    new Thread(() -> {
-        finalImage = brightness(inputimage, filter_strength);  //add for loop for video
-        runOnUiThread(() -> {
-            loading.setVisibility(View.INVISIBLE);
-            screenview.setImageBitmap(finalImage);
-            wait.setVisibility(View.INVISIBLE);
-        });
-        reset = 1;
-    }).start();
+//    new Thread(() -> {
+//        finalImage = brightness(inputimage, filter_strength);  //add for loop for video
+//        runOnUiThread(() -> {
+//            loading.setVisibility(View.INVISIBLE);
+//            screenview.setImageBitmap(finalImage);
+//            wait.setVisibility(View.INVISIBLE);
+//        });
+//        reset = 1;
+//    }).start();
 
 }
 
