@@ -8,6 +8,7 @@ import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -27,11 +28,8 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
-import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
-import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
-import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
-import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
+import com.arthenica.mobileffmpeg.Config;
+import com.arthenica.mobileffmpeg.FFmpeg;
 
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
@@ -58,20 +56,13 @@ import static org.opencv.core.Core.merge;
 import static org.opencv.core.Core.normalize;
 import static org.opencv.core.Core.split;
 
-import static com.github.hiteshsondhi88.libffmpeg.FFmpeg.getInstance;
 
 
-public class VideoToFrameActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
-
-    FFmpeg ffmpeg = getInstance(this);
-
-    private android.net.Uri videoUri = null;
-    ArrayList<Bitmap> framesVideo = new ArrayList<Bitmap>();
-    ArrayList<Bitmap> filteredVideo = new ArrayList<Bitmap>();
-
-    String[] filternames = {"Original", "Erosion", "Dilate", "Blur", "Low Pass", "High Pass", "Rift", "Phase"};
 public class VideoToFrameActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     //Variables for control / text input
+
+    FFmpeg ffmpeg;
+
     private final android.net.Uri videoUri = null;
     String[] filternames = {"Original", "Erosion", "Dilate", "Blur", "Low Pass", "High Pass", "Rift", "Phase"};
     int filter_pos, filter_strength;
@@ -211,6 +202,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                                     myVideoView.setVisibility(View.INVISIBLE);
                                     imageView.setVisibility((View.VISIBLE));
                                     imageView.setImageBitmap(filteredVideo.get(1));
+
                                 });
                             }).start();
                         }
@@ -245,13 +237,11 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                     }
                 }
             }
-            makeVideo(framesVideo);
+            makeVideo(filteredVideo);
         }
 
     };
-            }
-        }
-    };
+
 
     //Rift Function Written by Aidan
     public static Mat rift(Mat img, int mag) {
@@ -274,50 +264,13 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         int m = getOptimalDFTSize(img.rows());
         int n = getOptimalDFTSize(img.cols());
 
-    public void makeVideo(ArrayList<Bitmap> framesVideo) {
         //Looping through the 3 color channels of the image
         for (int i = 0; i < 3; i++) {
             curim = chans.get(i);
             // on the border add zero values
             copyMakeBorder(curim, padded, 0, m - curim.rows(), 0, n - curim.cols(), BORDER_CONSTANT, Scalar.all(0));
-
-        for (int i=0; i<framesVideo.size(); i++) {
-            try {
-                String filename = "frame" + Integer.toString(i) + ".png";
-                FileOutputStream stream = this.openFileOutput(filename, Context.MODE_PRIVATE);
-                framesVideo.get(i).compress(Bitmap.CompressFormat.PNG, 100, stream);
-                stream.close();
-                framesVideo.get(i).recycle();
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
         }
 
-        String[] cmd = new String[]{"-r", "10", "-f", "image2", "-s", "1920x1000", "-i", "frame%d.png", "-vcodec", "libx264", "-crf", "25", "-pix_fmt", "yuv420p", "test.mp4"};
-
-        try {
-            // to execute "ffmpeg -version" command you just need to pass "-version"
-            ffmpeg.execute(cmd, new ExecuteBinaryResponseHandler() {
-
-                @Override
-                public void onStart() {}
-
-                @Override
-                public void onProgress(String message) {}
-
-                @Override
-                public void onFailure(String message) {}
-
-                @Override
-                public void onSuccess(String message) {}
-
-                @Override
-                public void onFinish() {}
-            });
-        } catch (FFmpegCommandAlreadyRunningException e) {
-            // Handle if FFmpeg is already running
-        }
-    }
             //Create the channels needed to perform DFT
             List<Mat> planes = new ArrayList<>();
             planes.add(padded);
@@ -347,7 +300,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
 
             //Adding this new channel to the list
             newchans.add(curidft);
-        }
+
 
         //Creating a mat that has original input type and size
         Mat rifted = new Mat(img.size(), img.type());
@@ -370,10 +323,38 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
     public void onNothingSelected(AdapterView<?> parent) {
     }
 
+    public void makeVideo(ArrayList<Bitmap> framesVideo) {
+
+
+        for (int i=0; i<framesVideo.size(); i++) {
+            try {
+                String filename = "frame" + Integer.toString(i) + ".png";
+                FileOutputStream stream = this.openFileOutput(filename, Context.MODE_PRIVATE);
+                framesVideo.get(i).compress(Bitmap.CompressFormat.PNG, 100, stream);
+                stream.close();
+                framesVideo.get(i).recycle();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        }
+        String path = getFilesDir().getPath();
+//        String save_path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath();
+        String[] cmd = new String[]{"-r", "10", "-f", "image2", "-s", "1920x1000", "-i", path + "/frame%d.png", "-crf", "25", "-pix_fmt", "yuv420p", path + "/test.mp4"};
+
+
+
+        FFmpeg.execute(cmd);
+
+        myVideoView.setVisibility(View.VISIBLE);
+        imageView.setVisibility((View.INVISIBLE));
+        myVideoView.setVideoURI(Uri.parse(Uri.encode(path + "/test.mp4")));
+    }
+
     @Override
     protected void onCreate(Bundle SavedInstanceState) {
         super.onCreate(SavedInstanceState);
         setContentView(R.layout.activity_play_video);
+
 
         //Video Code to initialize Video
         myVideoView = findViewById(R.id.videoView1);
@@ -382,7 +363,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         myVideoView.start();
 
         //Removable Image Code, used for testing
-        imageView = findViewById(R.id.screenviewv);
+        imageView = findViewById(R.id.screenViewv);
         imageView.setVisibility(View.INVISIBLE);
 
         //Preliminary Code for the dropdown
@@ -436,25 +417,6 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         }
 
 
-
-        try {
-            ffmpeg.loadBinary(new LoadBinaryResponseHandler() {
-
-                @Override
-                public void onStart() {}
-
-                @Override
-                public void onFailure() {}
-
-                @Override
-                public void onSuccess() {}
-
-                @Override
-                public void onFinish() {}
-            });
-        } catch (FFmpegNotSupportedException e) {
-            // Handle if FFmpeg is not supported by device
-        }
         //getting frame size to initialize mats
         frame = framesVideo.get(0);
         filtframe = frame;
