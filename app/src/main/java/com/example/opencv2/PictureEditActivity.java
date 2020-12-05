@@ -22,10 +22,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.opencv.android.Utils;
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -36,14 +34,16 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
 import static org.opencv.core.Core.BORDER_CONSTANT;
+import static org.opencv.core.Core.DFT_COMPLEX_OUTPUT;
 import static org.opencv.core.Core.DFT_INVERSE;
 import static org.opencv.core.Core.NORM_MINMAX;
 import static org.opencv.core.Core.copyMakeBorder;
@@ -53,11 +53,11 @@ import static org.opencv.core.Core.magnitude;
 import static org.opencv.core.Core.merge;
 import static org.opencv.core.Core.normalize;
 import static org.opencv.core.Core.split;
-import static org.opencv.imgproc.Imgproc.circle;
+import static org.opencv.imgproc.Imgproc.resize;
 
 public class PictureEditActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     //Variables for Control and text
-    String[] filternames = {"Original", "Pixelate", "RGB Manipulation", "Brightness", "Erosion", "Dilate", "Blur", "Low Pass", "High Pass", "Rift", "Phase"};
+    String[] filternames = {"Original", "Pixelate", "RGB Manipulation", "Brightness", "Erosion", "Dilate", "Blur", "Low Pass", "High Pass", "Rift"};
     int filter_pos, filter_strength, redstrength, bluestrength, greenstrength;
     int reset;
     int processing = 0;
@@ -128,11 +128,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                     case 9: {
                         progresslabel.setText("Rift Magnitude: " + (progress + 1));
                         filter_strength = progress + 1;
-                        break;
-                    }
-                    case 10: {
-                        progresslabel.setText("Phase Factor: " + (progress));
-                        filter_strength = progress;
                         break;
                     }
                 }
@@ -256,7 +251,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                             } else {
                                 new Thread(() -> {
                                     //High Pass Filter. Input is OpenCVFrame and output should be ToScreen
-                                    ToScreen = highpass(OpenCVFrame, filter_strength);
+//                                    ToScreen = highpass(OpenCVFrame, filter_strength);
                                     Utils.matToBitmap(ToScreen, finalImage);
                                     runOnUiThread(() -> stopProcessing());
                                 }).start();
@@ -278,23 +273,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                     Utils.matToBitmap(ToScreen, finalImage);
                                     runOnUiThread(() -> stopProcessing());
                                 }).start();
-                            }
-                            break;
-                        }
-                        case 10: {
-                            //Phase
-                            if (reset == 0) {
-                                new Thread(() -> {
-                                    Image = reset(Image);
-                                    runOnUiThread(() -> stopProcessing());
-                                    reset = 1;
-                                }).start();
-                            } else {
-                                new Thread(() -> {
-                                    //Phase. Input is OpenCVFrame and output should be ToScreen
-                                    runOnUiThread(() -> stopProcessing());
-                                }).start();
-                                Toast.makeText(getApplicationContext(), "Phase", Toast.LENGTH_SHORT).show();
                             }
                             break;
                         }
@@ -653,15 +631,10 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         merge(newchans, rifted);
 
         //Convert to type for display then return
-        rifted = convert4return(rifted);
+        convert4return(rifted);
         return rifted;
     }
 
-    //Function to convert specific filters into values for bitmap display
-    public static Mat convert4return(Mat m) {
-        m.convertTo(m, CvType.CV_8UC4, 255);
-        return m;
-    }
 
     public static void fftshift(Mat FT) {
         // rearrange the quadrants of Fourier image  so that the origin is at the image center
@@ -689,66 +662,112 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         tmp.copyTo(q2);
     }
 
+    public static double distform(int x1, int y1, int x2, int y2) {
+        return sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
+    }
+
+    public static Mat lowMask(Mat m, int radius) {
+        int row = m.rows();
+        int col = m.cols();
+        Mat mask = Mat.zeros(row, col, m.type());
+        int cx = col / 2;
+        int cy = row / 2;
+        int i, j;
+        for (i = 0; i < row; i++) {
+            for (j = 0; j < col; j++) {
+                if (distform(cx, cy, j, i) < (double) radius) {
+                    mask.put(i, j, (float) 1);
+                }
+            }
+        }
+        return mask;
+    }
+
+    public static Mat hiMask(Mat m, int radius) {
+        int row = m.rows();
+        int col = m.cols();
+        Mat mask = Mat.zeros(row, col, m.type());
+
+        int cx = col / 2;
+        int cy = row / 2;
+        double[] data = m.get(1, 1);
+        int i, j;
+        for (i = 0; i < row; i++) {
+            for (j = 0; j < col; j++) {
+                if (distform(cx, cy, j, i) > (double) radius) {
+                    for (int k = 0; k < m.channels(); k++) {
+                        data[k] = 0;
+                    }
+                    mask.put(i, j, data);
+                }
+            }
+        }
+        return mask;
+    }
+
     public static Mat highpass(Mat img, int radius) {
         int m = getOptimalDFTSize(img.rows());
         int n = getOptimalDFTSize(img.cols());
-        Mat mask = new Mat(m, n, CvType.CV_32FC1);
 
-        circle(mask, new Point((float) mask.cols() / 2, (float) mask.rows() / 2), radius, new Scalar(1), -1, 8, 0);
-
-        Core.bitwise_not(mask, mask);
         List<Mat> chans = new ArrayList<>();
-
         //split the channels in order to manipulate them
         split(img, chans);
 
+        //Making mat variables to hold transforms
         Mat curim;
-
         Mat curdft = new Mat(m, n, CvType.CV_32FC2);
 
+        //Creating a mask for the high pass filter
+        Mat mask = hiMask(curdft, radius);
         Mat padded = new Mat(m, n, CvType.CV_32FC1);
-
         Mat curidft = new Mat(m, n, CvType.CV_32FC2);
+        List<Mat> newchans = new ArrayList<>();
 
-        Mat[] newchans = new Mat[img.channels()];
-
-        //loop through channels
+        //Loop through the channels
         for (int i = 0; i < img.channels(); i++) {
             curim = chans.get(i);
-
             // on the border add zero values
-            copyMakeBorder(curim, padded, 0, m - curim.rows(), 0, n - curim.cols(), BORDER_CONSTANT);
+            copyMakeBorder(curim, padded, 0, m - curim.rows(), 0, n - curim.cols(), BORDER_CONSTANT, Scalar.all(0));
+
+            //Create the channels for the merging and DFT
             List<Mat> planes = new ArrayList<>();
             planes.add(padded);
             planes.add(Mat.zeros(padded.size(), padded.type()));
-            merge(planes, curdft);        // Add to the expanded another plane with zeros
+            merge(planes, curdft);    // Add to the expanded another plane with zeros
             curdft.convertTo(curdft, CvType.CV_32FC2);
             dft(curdft, curdft);          // this way the result may fit in the source matrix
-
             split(curdft, planes);       // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
 
+            //Loop through the planes
             for (int j = 0; j < 2; j++) {
-                fftshift(planes.get(j));            // rearrange so low frequencies are centered
-                Core.bitwise_and(planes.get(j), mask, planes.get(j));  // apply mask: only use values outside radius defined above
-                fftshift(planes.get(j));            // rearrange back
+                Mat size = new Mat(planes.get(j).cols() & -2, planes.get(j).rows() & -2, planes.get(j).type());
+                planes.set(j, size);
+                fftshift(planes.get(j));                // rearrange so low frequencies are centered
+                resize(mask, mask, planes.get(j).size());
+                mask.convertTo(mask, CvType.CV_32FC1);
+                planes.get(j).convertTo(planes.get(j), CvType.CV_32FC1);
+                planes.set(j, planes.get(j).mul(mask));  // apply mask: only use values inside/outside radius defined above
+                fftshift(planes.get(j));                // rearrange back
             }
 
+            //Merge the multiple mats together into a new channel
             merge(planes, curdft);
-
-            dft(curdft, curidft, DFT_INVERSE);
+            dft(curdft, curidft, DFT_INVERSE | DFT_COMPLEX_OUTPUT);
             split(curidft, planes);
             magnitude(planes.get(0), planes.get(1), curidft);
             normalize(curidft, curidft, 0, 1, NORM_MINMAX);
-
-            newchans[i] = curidft;
+            newchans.set(i, curidft);
         }
-
         Mat hipass = new Mat(img.size(), img.type());
-
-        //then merge them back
-        merge(Arrays.asList(newchans), hipass);
-        hipass.convertTo(hipass, CvType.CV_8UC3);
+        //then merge newly made channels together
+        merge(newchans, hipass);
+        hipass.convertTo(hipass, CvType.CV_8UC4);
         return hipass;
+    }
+
+    //Function to convert specific filters into values for bitmap display
+    public static void convert4return(Mat m) {
+        m.convertTo(m, CvType.CV_8UC4, 255);
     }
 
     @Override
@@ -991,14 +1010,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.irift);
                 strength.setMax(255);
-                strength.setProgress(0);
-                break;
-            }
-            case 10: {
-                onefiltsetup();
-                Utils.bitmapToMat(inputimage, OpenCVFrame);
-                progresslabel.setText(R.string.iphase);
-                strength.setMax(90);
                 strength.setProgress(0);
                 break;
             }
