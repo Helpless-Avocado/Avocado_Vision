@@ -59,6 +59,7 @@ import static org.opencv.core.Core.split;
 
 
 public class VideoToFrameActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+
     //Variables for control / text input
 
     FFmpeg ffmpeg;
@@ -156,13 +157,16 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                                     frame = framesVideo.get(i);
                                     Utils.bitmapToMat(frame, framemat);
                                     Imgproc.erode(framemat, filtmat, kernel);
+                                    Bitmap filtframe = frame;
                                     Utils.matToBitmap(filtmat, filtframe);
                                     filteredVideo.add(filtframe);
+
                                 }
                                 runOnUiThread(() -> {
                                     myVideoView.setVisibility(View.INVISIBLE);
                                     imageView.setVisibility((View.VISIBLE));
                                     imageView.setImageBitmap(filteredVideo.get(1));
+                                    makeVideo();
                                     stopProcessing();
                                 });
                             }).start();
@@ -175,6 +179,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                                     frame = framesVideo.get(i);
                                     Utils.bitmapToMat(frame, framemat);
                                     Imgproc.dilate(framemat, filtmat, kernel);
+                                    Bitmap filtframe = frame;
                                     Utils.matToBitmap(filtmat, filtframe);
                                     filteredVideo.add(filtframe);
                                 }
@@ -183,6 +188,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                                     myVideoView.setVisibility(View.INVISIBLE);
                                     imageView.setVisibility((View.VISIBLE));
                                     imageView.setImageBitmap(filteredVideo.get(1));
+                                    makeVideo();
                                 });
                             }).start();
                             break;
@@ -193,15 +199,21 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                                 for (int i = 0; i < framesVideo.size(); i++) {
                                     frame = framesVideo.get(i);
                                     Utils.bitmapToMat(frame, framemat);
+                                    Bitmap filtframe = frame;
                                     Imgproc.blur(framemat, filtmat, size);
                                     Utils.matToBitmap(filtmat, filtframe);
                                     filteredVideo.add(filtframe);
+
                                 }
+
                                 runOnUiThread(() -> {
-                                    stopProcessing();
+
                                     myVideoView.setVisibility(View.INVISIBLE);
                                     imageView.setVisibility((View.VISIBLE));
                                     imageView.setImageBitmap(filteredVideo.get(1));
+                                    makeVideo();
+                                    stopProcessing();
+
 
                                 });
                             }).start();
@@ -222,10 +234,14 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                                     frame = framesVideo.get(i);
                                     Utils.bitmapToMat(frame, framemat);
                                     filtmat = rift(framemat, filter_strength);
+                                    Bitmap filtframe = frame;
                                     Utils.matToBitmap(filtmat, filtframe);
                                     filteredVideo.add(filtframe);
                                 }
-                                runOnUiThread(() -> stopProcessing());
+                                runOnUiThread(() -> {
+                                    makeVideo();
+                                    stopProcessing();
+                                });
                             }).start();
                             break;
                         }
@@ -237,7 +253,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                     }
                 }
             }
-            makeVideo(filteredVideo);
+
         }
 
     };
@@ -323,31 +339,49 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
     public void onNothingSelected(AdapterView<?> parent) {
     }
 
-    public void makeVideo(ArrayList<Bitmap> framesVideo) {
+    public void makeVideo() {
+        File filepath = Environment.getExternalStorageDirectory();
+
+        // Create a new folder in SD Card
+        File path = new File(filepath.getAbsolutePath() + "/FilterVideos");
+        String apath = path.getAbsolutePath();
+        if (!path.exists()) {
+            boolean check = path.mkdir();
+            if (!check) {
+                Toast.makeText(getApplicationContext(), "Failed to Find/ Make Directory", Toast.LENGTH_SHORT).show();
+            }
+        }
 
 
-        for (int i=0; i<framesVideo.size(); i++) {
+
+        for (int i=0; i<filteredVideo.size(); i++) {
             try {
                 String filename = "frame" + Integer.toString(i) + ".png";
-                FileOutputStream stream = this.openFileOutput(filename, Context.MODE_PRIVATE);
-                framesVideo.get(i).compress(Bitmap.CompressFormat.PNG, 100, stream);
-                stream.close();
-                framesVideo.get(i).recycle();
+//                FileOutputStream stream = this.openFileOutput(filename, Context.MODE_PRIVATE);
+                File file = new File(path, filename);
+                FileOutputStream out = new FileOutputStream(file);
+                filteredVideo.get(i).compress(Bitmap.CompressFormat.PNG, 10, out);
+
+                out.close();
+                out.flush();
+//                stream.close();
+//
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
         }
-        String path = getFilesDir().getPath();
+//        String path = this.getFilesDir().getAbsolutePath();
 //        String save_path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath();
-        String[] cmd = new String[]{"-r", "10", "-f", "image2", "-s", "1920x1000", "-i", path + "/frame%d.png", "-crf", "25", "-pix_fmt", "yuv420p", path + "/test.mp4"};
+        String[] cmd = new String[]{"-r", "10", "-f", "image2", "-s", "1920x1000", "-i", apath + "/frame%d.png", "-crf", "25", "-c:v", "mpeg4", "-pix_fmt", "yuv420p", "-y", apath + "/test.mp4"};
 
 
 
-        FFmpeg.execute(cmd);
-
-        myVideoView.setVisibility(View.VISIBLE);
-        imageView.setVisibility((View.INVISIBLE));
-        myVideoView.setVideoURI(Uri.parse(Uri.encode(path + "/test.mp4")));
+        int rc = FFmpeg.execute(cmd);
+        if (rc == com.arthenica.mobileffmpeg.Config.RETURN_CODE_SUCCESS) {
+            myVideoView.setVisibility(View.VISIBLE);
+            imageView.setVisibility((View.INVISIBLE));
+            myVideoView.setVideoURI(Uri.parse(Uri.encode(apath + "/test.mp4")));
+        }
     }
 
     @Override
@@ -409,7 +443,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         int millis = mp.getDuration();
 
         //for each time interval save bitmap to bitmap array
-        for (int i = 0; i < millis * 1000; i += 100000) {
+        for (int i = 100000; i < millis * 1000; i += 75000) {
             Bitmap bitmap = retriever.getFrameAtTime(i, MediaMetadataRetriever.OPTION_CLOSEST);
             if (bitmap != null) {
                 framesVideo.add(bitmap);
