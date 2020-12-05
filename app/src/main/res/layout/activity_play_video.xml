@@ -27,6 +27,21 @@
         app:layout_constraintStart_toEndOf="@+id/buttonv"
         app:layout_constraintTop_toTopOf="@+id/buttonv" />
 
+    <ImageView
+        android:id="@+id/screenviewv"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:contentDescription="@string/img_desc"
+        android:gravity="top"
+        app:layout_constraintBottom_toTopOf="@+id/progress_labelv"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@android:drawable/sym_def_app_icon"
+        tools:srcCompat="@android:drawable/sym_def_app_icon" />
+
     <VideoView
         android:id="@+id/videoView1"
         android:layout_width="0dp"
@@ -73,59 +88,29 @@
         app:layout_constraintEnd_toEndOf="@+id/strengthv"
         app:layout_constraintStart_toStartOf="@+id/strengthv" />
 
-<!--    <SeekBar-->
-<!--        android:id="@+id/redBarv"-->
-<!--        android:layout_width="100dp"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        app:layout_constraintBottom_toBottomOf="@+id/greenBarv"-->
-<!--        app:layout_constraintEnd_toStartOf="@+id/greenBarv"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="@+id/greenBarv" />-->
-
-<!--    <SeekBar-->
-<!--        android:id="@+id/greenBarv"-->
-<!--        android:layout_width="100dp"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        app:layout_constraintBottom_toBottomOf="@+id/blueBarv"-->
-<!--        app:layout_constraintEnd_toEndOf="@+id/videoView1"-->
-<!--        app:layout_constraintStart_toStartOf="@+id/videoView1"-->
-<!--        app:layout_constraintTop_toTopOf="@+id/blueBarv"-->
-<!--        app:layout_constraintVertical_bias="0.0" />-->
-
-<!--    <SeekBar-->
-<!--        android:id="@+id/blueBarv"-->
-<!--        android:layout_width="100dp"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        app:layout_constraintBottom_toTopOf="@+id/buttonv"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toEndOf="@+id/greenBarv"-->
-<!--        app:layout_constraintTop_toTopOf="@+id/strengthv" />-->
+    <ProgressBar
+        android:id="@+id/loading"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:indeterminate="true"
+        app:layout_constraintBottom_toTopOf="@+id/progress_labelv"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/videoView1" />
 
     <TextView
-        android:id="@+id/redTextv"
+        android:id="@+id/wait"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/progress_labelv"
-        app:layout_constraintEnd_toEndOf="@+id/redBarv"
-        app:layout_constraintStart_toStartOf="@id/redBarv"
-        app:layout_constraintTop_toTopOf="@+id/progress_labelv" />
-
-    <TextView
-        android:id="@+id/greenTextv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/progress_labelv"
-        app:layout_constraintEnd_toEndOf="@+id/greenBarv"
-        app:layout_constraintStart_toStartOf="@id/greenBarv"
-        app:layout_constraintTop_toTopOf="@+id/progress_labelv" />
-
-    <TextView
-        android:id="@+id/blueTextv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/progress_labelv"
-        app:layout_constraintEnd_toEndOf="@+id/blueBarv"
-        app:layout_constraintStart_toStartOf="@id/blueBarv"
-        app:layout_constraintTop_toTopOf="@+id/progress_labelv" />
+        android:background="@drawable/border"
+        android:text="@string/please_wait"
+        android:textColor="@color/black"
+        android:textSize="64sp"
+        app:layout_constraintBottom_toTopOf="@+id/loading"
+        app:layout_constraintEnd_toEndOf="@+id/loading"
+        app:layout_constraintStart_toStartOf="@+id/loading"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
