@@ -33,10 +33,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -115,13 +116,13 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                         break;
                     }
                     case 7: {
-                        progresslabel.setText("Low Pass Strength: " + (progress));
-                        filter_strength = progress;
+                        progresslabel.setText("Low Pass Strength: " + (progress + 1));
+                        filter_strength = progress + 1;
                         break;
                     }
                     case 8: {
-                        progresslabel.setText("High Pass Strength: " + (progress));
-                        filter_strength = progress;
+                        progresslabel.setText("High Pass Strength: " + (progress + 1));
+                        filter_strength = progress + 1;
                         break;
                     }
                     case 9: {
@@ -237,7 +238,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                                     Utils.matToBitmap(ToScreen, finalImage);
                                     runOnUiThread(() -> stopProcessing());
                                 }).start();
-                                Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
                             }
                             break;
                         }
@@ -634,11 +634,11 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         merge(newchans, rifted);
 
         //Convert to type for display then return
-        rifted.convertTo(rifted, CvType.CV_8UC4, 255);
+        convert4return(rifted);
         return rifted;
     }
 
-
+    //Function to apply Fourier Shift
     public static void fftshift(Mat FT) {
         // rearrange the quadrants of Fourier image  so that the origin is at the image center
         int cx = FT.cols() / 2;
@@ -665,10 +665,12 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         tmp.copyTo(q2);
     }
 
+    //Function to create distribution
     public static double distform(int x1, int y1, int x2, int y2) {
         return sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
     }
 
+    //Function to create low pass filter mask
     public static Mat lowMask(Mat m, int radius) {
         int row = m.rows();
         int col = m.cols();
@@ -686,6 +688,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         return mask;
     }
 
+    //Function to create high pass filter mask
     public static Mat hiMask(Mat m, int radius) {
         int row = m.rows();
         int col = m.cols();
@@ -704,6 +707,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         return mask;
     }
 
+    //Function to apply a highpass filter
     public static Mat highpass(Mat img, int radius) {
         int m = getOptimalDFTSize(img.rows());
         int n = getOptimalDFTSize(img.cols());
@@ -759,6 +763,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         return hipass;
     }
 
+    //Function to apply a lowpass filter
     public static Mat lowpass(Mat img, int radius) {
         int m = getOptimalDFTSize(img.rows());
         int n = getOptimalDFTSize(img.cols());
@@ -910,6 +915,9 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
 
         //Code that saves the image to the file, and adds it to the picture gallery.
         save.setOnClickListener(v -> {
+            //Update button text for return
+            go_back.setText(R.string.Return);
+
             //Store the bitmap in the image gallery
             OutputStream output;
 
@@ -917,7 +925,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
             File filepath = Environment.getExternalStorageDirectory();
 
             // Create a new folder in SD Card
-            File path = new File(filepath.getAbsolutePath() + "/FilterImages/");
+            File path = new File(filepath.getAbsolutePath() + "/Avocado_Vision/");
             if (!path.exists()) {
                 boolean check = path.mkdir();
                 if (!check) {
@@ -926,9 +934,10 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
             }
 
             // Create a name for the saved image and save to gallery
-            Date currentTime = Calendar.getInstance().getTime();
-            String newfilename = currentTime.toString();
-            File file = new File(path, newfilename + ".png");
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US);
+            Date now = new Date();
+            String newname = formatter.format(now) + ".png";
+            File file = new File(path, newname);
 
             //If successfully saved, shows filepath, otherwise shows error
             try {
@@ -1052,7 +1061,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.ilowpass);
-                strength.setMax(90);
+                strength.setMax(99);
                 strength.setProgress(0);
                 break;
             }
@@ -1060,7 +1069,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.ihighpass);
-                strength.setMax(90);
+                strength.setMax(99);
                 strength.setProgress(0);
                 break;
             }

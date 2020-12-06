@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Avocado Vision</string>
-    <string name="Return">Discard</string>
+    <string name="Return">Return</string>
+    <string name="Discard">Discard</string>
     <string name="welcome_new">Welcome to New Activity</string>
     <string name="img_desc">Image to be Filtered</string>
     <string name="vid_desc">Video to be Filtered</string>
@@ -14,10 +15,10 @@
     <string name="ired">Red: 100%</string>
     <string name="ipixel">Pixelation Factor: 1</string>
     <string name="idilation">Dilation Factor: 1</string>
+    <string name="ilowpass">Low Pass Magnitude: 1</string>
+    <string name="ihighpass">High Pass Magnitude: 1</string>
     <string name="iblur">Blur Strength: 0</string>
     <string name="irift">Rift Magnitude: 1</string>
-    <string name="ihighpass">High Pass Radius: 10</string>
-    <string name="ilowpass">Low Pass Radius: 10</string>
     <string name="please_wait">Please Wait</string>
     <string name="ffproc">FFMPEG Processing</string>
     <string name="video">Video</string>
