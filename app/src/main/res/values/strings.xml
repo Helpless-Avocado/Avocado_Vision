@@ -19,4 +19,5 @@
     <string name="please_wait">Please Wait</string>
     <string name="ffproc">FFMPEG Processing</string>
     <string name="video">Video</string>
+    <string name="cleanup">Cleaning up Files, Please Wait</string>
 </resources>

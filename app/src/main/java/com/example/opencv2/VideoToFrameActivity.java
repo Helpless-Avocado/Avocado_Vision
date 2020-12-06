@@ -48,14 +48,17 @@ import static org.opencv.core.Core.normalize;
 import static org.opencv.core.Core.split;
 
 public class VideoToFrameActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+    //Accessor and control variables
     Uri original;
     String[] filternames = {"Original", "Erosion", "Dilate", "Blur", "Rift"};
     int filter_pos, filter_strength;
     int processing = 0;
+    int present = 0;
+    File path;
 
     //View Variables
-    ProgressBar loading, ffloading;
-    TextView progresslabel, wait, ffproc;
+    ProgressBar loading;
+    TextView progresslabel, wait, ffproc, del;
     SeekBar strength;
     ImageView imageView;
     private VideoView myVideoView;
@@ -268,48 +271,6 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
     public void onNothingSelected(AdapterView<?> parent) {
     }
 
-    //Code to make the video
-    public void makeVideo() {
-        // Find the SD Card patH
-        File filepath = Environment.getExternalStorageDirectory();
-        // Create a new folder in SD Card
-        File path = new File(filepath.getAbsolutePath() + "/FilterVideos/");
-        if (!path.exists()) {
-            boolean check = path.mkdir();
-            if (!check) {
-                Toast.makeText(getApplicationContext(), "Failed to Find/ Make Directory", Toast.LENGTH_SHORT).show();
-            }
-        }
-        startProcessing();
-        new Thread(() -> {
-            for (int i = 0; i < framesVideo.size(); i++) {
-                try {
-                    String filename = "frame" + i + ".png";
-                    File file = new File(path, filename);
-                    FileOutputStream out = new FileOutputStream(file);
-                    Bitmap New = filteredVideo.get(i);
-                    New.compress(Bitmap.CompressFormat.PNG, 100, out);
-                    out.flush();
-                    out.close();
-                } catch (Exception e) {
-                    Toast.makeText(getApplicationContext(), "File Not Successfully Saved", Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
-                }
-                runOnUiThread(this::startFFProcessing);
-            }
-            String apath = path.getAbsolutePath();
-            frame = framesVideo.get(1);
-            String Size = frame.getWidth() + "x" + frame.getHeight();
-            String[] cmd = new String[]{"-y", "-r", "10", "-f", "image2", "-s", Size, "-i", apath + "/frame%d.png", "-crf", "25", "-pix_fmt", "yuv420p", path + "/test.mp4"};
-            FFmpeg.execute(cmd);
-
-            runOnUiThread(() -> {
-                myVideoView.setVideoURI(Uri.parse(Uri.encode(path + "/test.mp4")));
-                stopFFProcessing();
-            });
-        }).start();
-    }
-
     @Override
     protected void onCreate(Bundle SavedInstanceState) {
         super.onCreate(SavedInstanceState);
@@ -343,18 +304,31 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         //Loading in the loading bar and wait text
         loading = findViewById(R.id.loading);
         loading.setVisibility(View.INVISIBLE);
-        ffloading = findViewById(R.id.ffload);
-        ffloading.setVisibility(View.INVISIBLE);
         wait = findViewById(R.id.wait);
         wait.setVisibility(View.INVISIBLE);
         ffproc = findViewById(R.id.ffwait);
         ffproc.setVisibility(View.INVISIBLE);
+        del = findViewById(R.id.del);
+        del.setVisibility(View.INVISIBLE);
+
+        //Initialize folder location
+        // Find the SD Card patH
+        File filepath = Environment.getExternalStorageDirectory();
+        // Create a new folder in SD Card
+        path = new File(filepath.getAbsolutePath() + "/FilterVideos/");
+        if (!path.exists()) {
+            boolean check = path.mkdir();
+            if (!check) {
+                Toast.makeText(getApplicationContext(), "Failed to Find/ Make Directory", Toast.LENGTH_SHORT).show();
+            }
+        }
 
         //Button for returning
         Button go_back = findViewById(R.id.buttonv);
 
         //Code that will return to the camera/ picture page
         go_back.setOnClickListener(v -> {
+            deletefiles();
             Intent intent = new Intent(VideoToFrameActivity.this, CameraActivity.class);
             startActivity(intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
         });
@@ -387,13 +361,48 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
             }
             runOnUiThread(() -> {
                 frame = framesVideo.get(0);
+                //getting frame size to initialize mats
                 framemat = new Mat(frame.getHeight(), frame.getWidth(), CvType.CV_8UC4);
                 filtmat = new Mat(frame.getHeight(), frame.getWidth(), CvType.CV_8UC4);
                 stopProcessing();
                 myVideoView.start();
             });
         }).start();
-        //getting frame size to initialize mats
+    }
+
+    //Code to make the video
+    public void makeVideo() {
+        startProcessing();
+        present = 1;
+        new Thread(() -> {
+            for (int i = 0; i < framesVideo.size(); i++) {
+                try {
+                    String filename = "frame" + i + ".png";
+                    File file = new File(path, filename);
+                    FileOutputStream out = new FileOutputStream(file);
+                    Bitmap New = filteredVideo.get(i);
+                    New.compress(Bitmap.CompressFormat.PNG, 100, out);
+                    out.flush();
+                    out.close();
+                } catch (Exception e) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(getApplicationContext(), "File Not Successfully Saved", Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    });
+                }
+                runOnUiThread(this::startFFProcessing);
+            }
+            String apath = path.getAbsolutePath();
+            frame = framesVideo.get(1);
+            String Size = frame.getWidth() + "x" + frame.getHeight();
+            String[] cmd = new String[]{"-y", "-r", "10", "-f", "image2", "-s", Size, "-i", apath + "/frame%d.png", "-crf", "25", "-pix_fmt", "yuv420p", path + "/test.mp4"};
+            FFmpeg.execute(cmd);
+
+            runOnUiThread(() -> {
+                myVideoView.setVideoURI(Uri.parse(Uri.encode(path + "/test.mp4")));
+                stopFFProcessing();
+            });
+        }).start();
     }
 
     //Function that initializes loading screen , pauses video
@@ -402,16 +411,14 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         loading.setVisibility(View.VISIBLE);
         wait.setVisibility(View.VISIBLE);
         ffproc.setVisibility(View.INVISIBLE);
-        ffloading.setVisibility(View.INVISIBLE);
         processing = 1;
     }
 
     //Indicates FFMPEG is working
     public void startFFProcessing() {
-        loading.setVisibility(View.INVISIBLE);
         wait.setVisibility(View.INVISIBLE);
         ffproc.setVisibility(View.VISIBLE);
-        ffloading.setVisibility(View.VISIBLE);
+        loading.setVisibility(View.VISIBLE);
         processing = 1;
     }
 
@@ -420,7 +427,6 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         loading.setVisibility(View.INVISIBLE);
         wait.setVisibility(View.INVISIBLE);
         ffproc.setVisibility(View.INVISIBLE);
-        ffloading.setVisibility(View.INVISIBLE);
         processing = 0;
     }
 
@@ -429,15 +435,45 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         wait.setVisibility(View.INVISIBLE);
         loading.setVisibility(View.INVISIBLE);
         ffproc.setVisibility(View.INVISIBLE);
-        ffloading.setVisibility(View.INVISIBLE);
         processing = 0;
         myVideoView.start();
+    }
+
+    //Code to clear .png files
+    public void deletefiles() {
+        //Code to delete the files and clean them up before going back, if files were present
+        if (present == 1) {
+            del.setVisibility(View.VISIBLE);
+            loading.setVisibility(View.VISIBLE);
+            present = 0;
+            new Thread(() -> {
+                boolean deleted;
+                for (int i = 0; i < filteredVideo.size(); i++) {
+                    try {
+                        String filename = "frame" + i + ".png";
+                        File file = new File(path, filename);
+                        deleted = file.delete();
+                        if (!deleted) {
+                            runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Failed to Delete Files", Toast.LENGTH_SHORT).show());
+                        }
+                    } catch (Exception e) {
+                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Failed to Find Files", Toast.LENGTH_SHORT).show());
+                        e.printStackTrace();
+                    }
+                }
+                runOnUiThread(() -> {
+                    del.setVisibility(View.INVISIBLE);
+                    loading.setVisibility(View.INVISIBLE);
+                });
+            }).start();
+        }
     }
 
     @Override
     //Code that will set up the screen and bars for specific filters
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         filter_pos = position;
+        deletefiles();
         switch (filter_pos) {
             case 0: {//Filter set up for original
                 progresslabel.setVisibility(View.INVISIBLE);

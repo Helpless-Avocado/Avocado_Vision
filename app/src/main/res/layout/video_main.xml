@@ -99,18 +99,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/videoView1" />
 
-    <ProgressBar
-        android:id="@+id/ffload"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:indeterminate="true"
-        app:layout_constraintBottom_toTopOf="@+id/progress_labelv"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/videoView1" />
-
-
     <TextView
         android:id="@+id/wait"
         android:layout_width="wrap_content"
@@ -134,6 +122,21 @@
         android:text="@string/ffproc"
         android:textColor="@color/black"
         android:textSize="64sp"
+        app:layout_constraintBottom_toTopOf="@+id/loading"
+        app:layout_constraintEnd_toEndOf="@+id/loading"
+        app:layout_constraintStart_toStartOf="@+id/loading"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/del"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/border"
+        android:gravity="center_horizontal|center_vertical"
+        android:text="@string/cleanup"
+        android:textColor="@color/black"
+        android:textSize="40sp"
         app:layout_constraintBottom_toTopOf="@+id/loading"
         app:layout_constraintEnd_toEndOf="@+id/loading"
         app:layout_constraintStart_toStartOf="@+id/loading"
