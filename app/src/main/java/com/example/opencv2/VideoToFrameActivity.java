@@ -375,6 +375,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         startProcessing();
         present = 1;
         new Thread(() -> {
+            //save all filtered video frames as .png
             for (int i = 0; i < framesVideo.size(); i++) {
                 try {
                     String filename = "frame" + i + ".png";
@@ -392,14 +393,17 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                 }
                 runOnUiThread(this::startFFProcessing);
             }
+
             String apath = path.getAbsolutePath();
             frame = framesVideo.get(1);
             String Size = frame.getWidth() + "x" + frame.getHeight();
-            String[] cmd = new String[]{"-y", "-r", "10", "-f", "image2", "-s", Size, "-i", apath + "/frame%d.png", "-crf", "25", "-pix_fmt", "yuv420p", path + "/test.mp4"};
+
+            //use FFmpeg library to encode .png files as a .mp4 file at 10 frames/second
+            String[] cmd = new String[]{"-y", "-r", "10", "-f", "image2", "-s", Size, "-i", apath + "/frame%d.png", "-crf", "25", "-pix_fmt", "yuv420p", apath + "/test.mp4"};
             FFmpeg.execute(cmd);
 
             runOnUiThread(() -> {
-                myVideoView.setVideoURI(Uri.parse(Uri.encode(path + "/test.mp4")));
+                myVideoView.setVideoURI(Uri.parse(apath + "/test.mp4"));
                 stopFFProcessing();
             });
         }).start();
