@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Avocado Vision</string>
-    <string name="Return">Return</string>
+    <string name="Return">Discard</string>
     <string name="welcome_new">Welcome to New Activity</string>
     <string name="img_desc">Image to be Filtered</string>
     <string name="vid_desc">Video to be Filtered</string>

@@ -597,6 +597,8 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.picture_main);
 
+        setTitle("Edit photo");
+
         //Resetting Reset
         reset = 0;
 

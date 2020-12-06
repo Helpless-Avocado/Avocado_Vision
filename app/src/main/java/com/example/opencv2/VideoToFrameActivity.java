@@ -315,6 +315,8 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         super.onCreate(SavedInstanceState);
         setContentView(R.layout.video_main);
 
+        setTitle("Edit video");
+
         //Video Code to initialize Video
         myVideoView = findViewById(R.id.videoView1);
         android.net.Uri videoUri = android.net.Uri.parse(getIntent().getExtras().getString("videoUri"));

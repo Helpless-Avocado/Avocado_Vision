@@ -58,6 +58,8 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.camera_main);
 
+        setTitle("Choose filter");
+
         //Checking if Permissions are granted
         checkPermission(Manifest.permission.CAMERA, Camera_Perms);
 
