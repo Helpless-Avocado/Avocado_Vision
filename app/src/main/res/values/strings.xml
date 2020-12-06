@@ -7,6 +7,7 @@
     <string name="vid_desc">Video to be Filtered</string>
     <string name="picture">Picture</string>
     <string name="save">Save</string>
+    <string name="play">Play</string>
     <string name="iexpansion">Erosion Factor: 1</string>
     <string name="ibrightness">Brightness: 0</string>
     <string name="iblue">Blue: 100%</string>
@@ -20,5 +21,6 @@
     <string name="irift">Rift Magnitude: 1</string>
     <string name="iphase">Phase Factor: 0</string>
     <string name="please_wait">Please Wait</string>
+    <string name="ffproc">FFMPEG Processing</string>
     <string name="video">Video</string>
 </resources>

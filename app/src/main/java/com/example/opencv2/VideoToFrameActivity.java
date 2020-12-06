@@ -1,7 +1,6 @@
 package com.example.opencv2;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
@@ -21,6 +20,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.arthenica.mobileffmpeg.FFmpeg;
+
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -28,18 +29,8 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import com.arthenica.mobileffmpeg.Config;
-import com.arthenica.mobileffmpeg.FFmpeg;
-
-import org.opencv.android.Utils;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
-
-
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,20 +48,15 @@ import static org.opencv.core.Core.normalize;
 import static org.opencv.core.Core.split;
 
 
-
 public class VideoToFrameActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
-    //Variables for control / text input
-
-    FFmpeg ffmpeg;
-
-    private final android.net.Uri videoUri = null;
-    String[] filternames = {"Original", "Erosion", "Dilate", "Blur", "Low Pass", "High Pass", "Rift", "Phase"};
+    Uri original;
+    String[] filternames = {"Original", "Erosion", "Dilate", "Blur", "Rift"};
     int filter_pos, filter_strength;
     int processing = 0;
 
     //View Variables
-    ProgressBar loading;
-    TextView progresslabel, wait;
+    ProgressBar loading, ffloading;
+    TextView progresslabel, wait, ffproc;
     SeekBar strength;
     ImageView imageView;
     private VideoView myVideoView;
@@ -78,7 +64,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
     //Image Variables
     ArrayList<Bitmap> framesVideo = new ArrayList<>();
     ArrayList<Bitmap> filteredVideo = new ArrayList<>();
-    Bitmap frame, filtframe;
+    Bitmap frame;
     Mat framemat;
     Mat filtmat;
 
@@ -109,23 +95,8 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                         break;
                     }
                     case 4: {
-                        progresslabel.setText("Low Pass Strength: " + (progress + 10));
-                        filter_strength = progress + 10;
-                        break;
-                    }
-                    case 5: {
-                        progresslabel.setText("High Pass Strength: " + (progress + 10));
-                        filter_strength = progress + 10;
-                        break;
-                    }
-                    case 6: {
                         progresslabel.setText("Rift Magnitude: " + (progress + 1));
                         filter_strength = progress + 1;
-                        break;
-                    }
-                    case 7: {
-                        progresslabel.setText("Phase Factor: " + (progress));
-                        filter_strength = progress;
                         break;
                     }
                 }
@@ -154,15 +125,14 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                                 Mat kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
                                 for (int i = 0; i < framesVideo.size(); i++) {
                                     frame = framesVideo.get(i);
+                                    Bitmap filtframe = frame;
                                     Utils.bitmapToMat(frame, framemat);
                                     Imgproc.erode(framemat, filtmat, kernel);
                                     Utils.matToBitmap(filtmat, filtframe);
                                     filteredVideo.add(filtframe);
                                 }
                                 runOnUiThread(() -> {
-                                    myVideoView.setVisibility(View.INVISIBLE);
-                                    imageView.setVisibility((View.VISIBLE));
-                                    imageView.setImageBitmap(filteredVideo.get(1));
+                                    makeVideo();
                                     stopProcessing();
                                 });
                             }).start();
@@ -173,16 +143,15 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                                 Mat kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
                                 for (int i = 0; i < framesVideo.size(); i++) {
                                     frame = framesVideo.get(i);
+                                    Bitmap filtframe = frame;
                                     Utils.bitmapToMat(frame, framemat);
                                     Imgproc.dilate(framemat, filtmat, kernel);
                                     Utils.matToBitmap(filtmat, filtframe);
                                     filteredVideo.add(filtframe);
                                 }
                                 runOnUiThread(() -> {
+                                    makeVideo();
                                     stopProcessing();
-                                    myVideoView.setVisibility(View.INVISIBLE);
-                                    imageView.setVisibility((View.VISIBLE));
-                                    imageView.setImageBitmap(filteredVideo.get(1));
                                 });
                             }).start();
                             break;
@@ -192,54 +161,39 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                                 Size size = new Size(filter_strength, filter_strength);
                                 for (int i = 0; i < framesVideo.size(); i++) {
                                     frame = framesVideo.get(i);
+                                    Bitmap filtframe = frame;
                                     Utils.bitmapToMat(frame, framemat);
                                     Imgproc.blur(framemat, filtmat, size);
                                     Utils.matToBitmap(filtmat, filtframe);
                                     filteredVideo.add(filtframe);
                                 }
                                 runOnUiThread(() -> {
+                                    makeVideo();
                                     stopProcessing();
-                                    myVideoView.setVisibility(View.INVISIBLE);
-                                    imageView.setVisibility((View.VISIBLE));
-                                    imageView.setImageBitmap(filteredVideo.get(1));
-
                                 });
                             }).start();
                         }
                         case 4: {
-                            Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
-                            stopProcessing();
-                            break;
-                        }
-                        case 5: {
-                            Toast.makeText(getApplicationContext(), "High Pass", Toast.LENGTH_SHORT).show();
-                            stopProcessing();
-                            break;
-                        }
-                        case 6: {
                             new Thread(() -> {
                                 for (int i = 0; i < framesVideo.size(); i++) {
                                     frame = framesVideo.get(i);
+                                    Bitmap filtframe = frame;
                                     Utils.bitmapToMat(frame, framemat);
                                     filtmat = rift(framemat, filter_strength);
                                     Utils.matToBitmap(filtmat, filtframe);
                                     filteredVideo.add(filtframe);
                                 }
-                                runOnUiThread(() -> stopProcessing());
+                                runOnUiThread(() -> {
+                                    makeVideo();
+                                    stopProcessing();
+                                });
                             }).start();
-                            break;
-                        }
-                        case 7: {
-                            Toast.makeText(getApplicationContext(), "Phase", Toast.LENGTH_SHORT).show();
-                            stopProcessing();
                             break;
                         }
                     }
                 }
             }
-            makeVideo(filteredVideo);
         }
-
     };
 
 
@@ -309,45 +263,55 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         merge(newchans, rifted);
 
         //Convert to type for display then return
-        rifted = convert4return(rifted);
+        rifted.convertTo(rifted, CvType.CV_8UC4, 255);
         return rifted;
     }
 
-    //Function to convert specific filters into values for bitmap display
-    public static Mat convert4return(Mat m) {
-        m.convertTo(m, CvType.CV_8UC4, 255);
-        return m;
-    }
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
     }
 
-    public void makeVideo(ArrayList<Bitmap> framesVideo) {
-
-
-        for (int i=0; i<framesVideo.size(); i++) {
-            try {
-                String filename = "frame" + Integer.toString(i) + ".png";
-                FileOutputStream stream = this.openFileOutput(filename, Context.MODE_PRIVATE);
-                framesVideo.get(i).compress(Bitmap.CompressFormat.PNG, 100, stream);
-                stream.close();
-                framesVideo.get(i).recycle();
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
+    //Code to make the video
+    public void makeVideo() {
+        // Find the SD Card patH
+        File filepath = Environment.getExternalStorageDirectory();
+        // Create a new folder in SD Card
+        File path = new File(filepath.getAbsolutePath() + "/FilterVideos/");
+        if (!path.exists()) {
+            boolean check = path.mkdir();
+            if (!check) {
+                Toast.makeText(getApplicationContext(), "Failed to Find/ Make Directory", Toast.LENGTH_SHORT).show();
             }
         }
-        String path = getFilesDir().getPath();
-//        String save_path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath();
-        String[] cmd = new String[]{"-r", "10", "-f", "image2", "-s", "1920x1000", "-i", path + "/frame%d.png", "-crf", "25", "-pix_fmt", "yuv420p", path + "/test.mp4"};
+        startProcessing();
+        new Thread(() -> {
+            for (int i = 0; i < framesVideo.size(); i++) {
+                try {
+                    String filename = "frame" + i + ".png";
+                    File file = new File(path, filename);
+                    FileOutputStream out = new FileOutputStream(file);
+                    Bitmap New = filteredVideo.get(i);
+                    New.compress(Bitmap.CompressFormat.PNG, 100, out);
+                    out.flush();
+                    out.close();
+                } catch (Exception e) {
+                    Toast.makeText(getApplicationContext(), "File Not Successfully Saved", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
+                runOnUiThread(this::startFFProcessing);
+            }
+            String apath = path.getAbsolutePath();
+            frame = framesVideo.get(1);
+            String Size = frame.getWidth() + "x" + frame.getHeight();
+            String[] cmd = new String[]{"-y", "-r", "10", "-f", "image2", "-s", Size, "-i", apath + "/frame%d.png", "-crf", "25", "-pix_fmt", "yuv420p", path + "/test.mp4"};
+            FFmpeg.execute(cmd);
 
-
-
-        FFmpeg.execute(cmd);
-
-        myVideoView.setVisibility(View.VISIBLE);
-        imageView.setVisibility((View.INVISIBLE));
-        myVideoView.setVideoURI(Uri.parse(Uri.encode(path + "/test.mp4")));
+            runOnUiThread(() -> {
+                myVideoView.setVideoURI(Uri.parse(Uri.encode(path + "/test.mp4")));
+                stopFFProcessing();
+            });
+        }).start();
     }
 
     @Override
@@ -355,12 +319,10 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         super.onCreate(SavedInstanceState);
         setContentView(R.layout.activity_play_video);
 
-
         //Video Code to initialize Video
         myVideoView = findViewById(R.id.videoView1);
         android.net.Uri videoUri = android.net.Uri.parse(getIntent().getExtras().getString("videoUri"));
         myVideoView.setVideoURI(videoUri);
-        myVideoView.start();
 
         //Removable Image Code, used for testing
         imageView = findViewById(R.id.screenViewv);
@@ -383,8 +345,12 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         //Loading in the loading bar and wait text
         loading = findViewById(R.id.loading);
         loading.setVisibility(View.INVISIBLE);
+        ffloading = findViewById(R.id.ffload);
+        ffloading.setVisibility(View.INVISIBLE);
         wait = findViewById(R.id.wait);
         wait.setVisibility(View.INVISIBLE);
+        ffproc = findViewById(R.id.ffwait);
+        ffproc.setVisibility(View.INVISIBLE);
 
         //Button for returning
         Button go_back = findViewById(R.id.buttonv);
@@ -395,12 +361,16 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
             startActivity(intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
         });
 
-        //get videoUri from MainActivity
-        videoUri = Uri.parse(getIntent().getExtras().getString("videoUri"));
+        //Button for playing the video again
+        Button play = findViewById(R.id.play);
+        play.setOnClickListener(v -> myVideoView.start());
+
+        //get videoUri from MainActivity and store it for later use
+        original = Uri.parse(getIntent().getExtras().getString("videoUri"));
 
         //create new object to retrieve data, set video to be data source
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(this, videoUri);
+        retriever.setDataSource(this, original);
 
         //Create new mediaplayer
         MediaPlayer mp = MediaPlayer.create(getBaseContext(), videoUri);
@@ -409,25 +379,41 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         int millis = mp.getDuration();
 
         //for each time interval save bitmap to bitmap array
-        for (int i = 0; i < millis * 1000; i += 100000) {
-            Bitmap bitmap = retriever.getFrameAtTime(i, MediaMetadataRetriever.OPTION_CLOSEST);
-            if (bitmap != null) {
-                framesVideo.add(bitmap);
+        startProcessing();
+        new Thread(() -> {
+            for (int i = 0; i < millis * 1000; i += 100000) {
+                Bitmap bitmap = retriever.getFrameAtTime(i, MediaMetadataRetriever.OPTION_CLOSEST);
+                if (bitmap != null) {
+                    framesVideo.add(bitmap);
+                }
             }
-        }
-
-
+            runOnUiThread(() -> {
+                frame = framesVideo.get(0);
+                framemat = new Mat(frame.getHeight(), frame.getWidth(), CvType.CV_8UC4);
+                filtmat = new Mat(frame.getHeight(), frame.getWidth(), CvType.CV_8UC4);
+                stopProcessing();
+                myVideoView.start();
+            });
+        }).start();
         //getting frame size to initialize mats
-        frame = framesVideo.get(0);
-        filtframe = frame;
-        framemat = new Mat(frame.getHeight(), frame.getWidth(), CvType.CV_8UC4);
-        filtmat = new Mat(frame.getHeight(), frame.getWidth(), CvType.CV_8UC4);
     }
 
-    //Function that initializes loading screen
+    //Function that initializes loading screen , pauses video
     public void startProcessing() {
+        myVideoView.pause();
         loading.setVisibility(View.VISIBLE);
         wait.setVisibility(View.VISIBLE);
+        ffproc.setVisibility(View.INVISIBLE);
+        ffloading.setVisibility(View.INVISIBLE);
+        processing = 1;
+    }
+
+    //Indicates FFMPEG is working
+    public void startFFProcessing() {
+        loading.setVisibility(View.INVISIBLE);
+        wait.setVisibility(View.INVISIBLE);
+        ffproc.setVisibility(View.VISIBLE);
+        ffloading.setVisibility(View.VISIBLE);
         processing = 1;
     }
 
@@ -435,7 +421,19 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
     public void stopProcessing() {
         loading.setVisibility(View.INVISIBLE);
         wait.setVisibility(View.INVISIBLE);
+        ffproc.setVisibility(View.INVISIBLE);
+        ffloading.setVisibility(View.INVISIBLE);
         processing = 0;
+    }
+
+    //Indicates FFMPEG is done and plays result
+    public void stopFFProcessing() {
+        wait.setVisibility(View.INVISIBLE);
+        loading.setVisibility(View.INVISIBLE);
+        ffproc.setVisibility(View.INVISIBLE);
+        ffloading.setVisibility(View.INVISIBLE);
+        processing = 0;
+        myVideoView.start();
     }
 
     @Override
@@ -446,6 +444,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
             case 0: {//Filter set up for original
                 progresslabel.setVisibility(View.INVISIBLE);
                 strength.setVisibility(View.INVISIBLE);
+                myVideoView.setVideoURI(original);
                 break;
             }
             case 1: {//Set up for Erosion
@@ -472,35 +471,11 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                 strength.setProgress(0);
                 break;
             }
-            case 4: {//Set up for Lowpass
-                progresslabel.setVisibility(View.VISIBLE);
-                strength.setVisibility(View.VISIBLE);
-                progresslabel.setText(R.string.ilowpass);
-                strength.setMax(90);
-                strength.setProgress(0);
-                break;
-            }
-            case 5: {//Set up for Highpass
-                progresslabel.setVisibility(View.VISIBLE);
-                strength.setVisibility(View.VISIBLE);
-                progresslabel.setText(R.string.ihighpass);
-                strength.setMax(90);
-                strength.setProgress(0);
-                break;
-            }
-            case 6: {//Set up for Rift
+            case 4: {//Set up for Rift
                 progresslabel.setVisibility(View.VISIBLE);
                 strength.setVisibility(View.VISIBLE);
                 progresslabel.setText(R.string.irift);
                 strength.setMax(255);
-                strength.setProgress(0);
-                break;
-            }
-            case 7: {//Set up for Phase
-                progresslabel.setVisibility(View.VISIBLE);
-                strength.setVisibility(View.VISIBLE);
-                progresslabel.setText(R.string.iphase);
-                strength.setMax(90);
                 strength.setProgress(0);
                 break;
             }
