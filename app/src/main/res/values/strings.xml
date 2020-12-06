@@ -14,6 +14,8 @@
     <string name="ired">Red: 100%</string>
     <string name="ipixel">Pixelation Factor: 1</string>
     <string name="idilation">Dilation Factor: 1</string>
+    <string name="ilowpass">Low Pass Magnitude: 1</string>
+    <string name="ihighpass">High Pass Magnitude: 1</string>
     <string name="iblur">Blur Strength: 0</string>
     <string name="irift">Rift Magnitude: 1</string>
     <string name="please_wait">Please Wait</string>
