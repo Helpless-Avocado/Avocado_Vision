@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">opencv2</string>
-    <string name="title_activity_main2">MainActivity</string>
+    <string name="app_name">Avocado Vision</string>
     <string name="Return">Return</string>
     <string name="welcome_new">Welcome to New Activity</string>
     <string name="img_desc">Image to be Filtered</string>
@@ -16,10 +15,7 @@
     <string name="ipixel">Pixelation Factor: 1</string>
     <string name="idilation">Dilation Factor: 1</string>
     <string name="iblur">Blur Strength: 0</string>
-    <string name="ilowpass">Low Pass Strength: 10</string>
-    <string name="ihighpass">High Pass Strength: 10</string>
     <string name="irift">Rift Magnitude: 1</string>
-    <string name="iphase">Phase Factor: 0</string>
     <string name="please_wait">Please Wait</string>
     <string name="ffproc">FFMPEG Processing</string>
     <string name="video">Video</string>

@@ -47,7 +47,6 @@ import static org.opencv.core.Core.merge;
 import static org.opencv.core.Core.normalize;
 import static org.opencv.core.Core.split;
 
-
 public class VideoToFrameActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     Uri original;
     String[] filternames = {"Original", "Erosion", "Dilate", "Blur", "Rift"};
@@ -67,7 +66,6 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
     Bitmap frame;
     Mat framemat;
     Mat filtmat;
-
 
     //Code that controls the sliders
     SeekBar.OnSeekBarChangeListener strengthListener = new SeekBar.OnSeekBarChangeListener() {
@@ -196,7 +194,6 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         }
     };
 
-
     //Rift Function Written by Aidan
     public static Mat rift(Mat img, int mag) {
 
@@ -267,7 +264,6 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         return rifted;
     }
 
-
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
     }
@@ -317,7 +313,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
     @Override
     protected void onCreate(Bundle SavedInstanceState) {
         super.onCreate(SavedInstanceState);
-        setContentView(R.layout.activity_play_video);
+        setContentView(R.layout.video_main);
 
         //Video Code to initialize Video
         myVideoView = findViewById(R.id.videoView1);

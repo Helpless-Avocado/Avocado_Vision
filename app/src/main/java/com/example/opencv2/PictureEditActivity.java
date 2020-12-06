@@ -52,7 +52,7 @@ import static org.opencv.core.Core.split;
 
 public class PictureEditActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     //Variables for Control and text
-    String[] filternames = {"Original", "Pixelate", "RGB Manipulation", "Brightness", "Erosion", "Dilate", "Blur", "Low Pass", "High Pass", "Rift"};
+    String[] filternames = {"Original", "Pixelate", "RGB Manipulation", "Brightness", "Erosion", "Dilate", "Blur", "Rift"};
     int filter_pos, filter_strength, redstrength, bluestrength, greenstrength;
     int reset;
     int processing = 0;
@@ -82,7 +82,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         @SuppressLint("SetTextI18n")
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            // updated continuously as the user slides the thumb
+            // updated continuously as the user slides the thumb, updates text
             if (processing == 0) {
                 switch (filter_pos) {
                     case 1: {
@@ -111,16 +111,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                         break;
                     }
                     case 7: {
-                        progresslabel.setText("Low Pass Strength: " + (progress));
-                        filter_strength = progress;
-                        break;
-                    }
-                    case 8: {
-                        progresslabel.setText("High Pass Strength: " + (progress));
-                        filter_strength = progress;
-                        break;
-                    }
-                    case 9: {
                         progresslabel.setText("Rift Magnitude: " + (progress + 1));
                         filter_strength = progress + 1;
                         break;
@@ -219,41 +209,6 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                             break;
                         }
                         case 7: {
-                            //Lowpass Filter
-                            if (reset == 0) {
-                                new Thread(() -> {
-                                    Image = reset(Image);
-                                    runOnUiThread(() -> stopProcessing());
-                                    reset = 1;
-                                }).start();
-                            } else {
-                                new Thread(() -> {
-                                    //Low Pass Filter. Input is OpenCVFrame and output should be ToScreen
-                                    runOnUiThread(() -> stopProcessing());
-                                }).start();
-                                Toast.makeText(getApplicationContext(), "Low Pass", Toast.LENGTH_SHORT).show();
-                            }
-                            break;
-                        }
-                        case 8: {
-                            //HighPass Filter
-                            if (reset == 0) {
-                                new Thread(() -> {
-                                    Image = reset(Image);
-                                    runOnUiThread(() -> stopProcessing());
-                                    reset = 1;
-                                }).start();
-                            } else {
-                                new Thread(() -> {
-                                    //High Pass Filter. Input is OpenCVFrame and output should be ToScreen
-//                                    ToScreen = highpass(OpenCVFrame, filter_strength);
-                                    Utils.matToBitmap(ToScreen, finalImage);
-                                    runOnUiThread(() -> stopProcessing());
-                                }).start();
-                            }
-                            break;
-                        }
-                        case 9: {
                             //Rift
                             if (reset == 0) {
                                 new Thread(() -> {
@@ -545,12 +500,14 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         return newbit;
     }
 
-    //Code to initialize it so that OPEN CV works
+    // Code to initialize it so that OPEN CV works
     // For some reason, OPENCV only works after something goes through all the pixels in a bitmap
     public static Bitmap reset(Bitmap orig) {
         int width = orig.getWidth();
         int height = orig.getHeight();
         int pixvalue;
+
+        //Simply creating a dummy bitmap, and copying contents over pixel by pixel
         Bitmap newbit = Bitmap.createBitmap(width, height, orig.getConfig());
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
@@ -564,6 +521,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
     //Rift Function Written by Aidan
     public static Mat rift(Mat img, int mag) {
 
+        //Create a list to hold image channels
         List<Mat> chans = new ArrayList<>();
 
         //split the channels in order to manipulate them
@@ -753,7 +711,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         });
     }
 
-    //Function that sets up 1 filter view
+    //Function that sets up layout for when only 1 progress bar is visible
     public void onefiltsetup() {
         progresslabel.setVisibility(View.VISIBLE);
         strength.setVisibility(View.VISIBLE);
@@ -825,6 +783,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 break;
             }
             case 4: {
+                //Sets up for Erosion
                 onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.iexpansion);
@@ -834,6 +793,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 break;
             }
             case 5: {
+                //Sets up for Dilation
                 onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.idilation);
@@ -842,6 +802,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 break;
             }
             case 6: {
+                //Sets up for Blurring
                 onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.iblur);
@@ -850,22 +811,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 break;
             }
             case 7: {
-                onefiltsetup();
-                Utils.bitmapToMat(inputimage, OpenCVFrame);
-                progresslabel.setText(R.string.ilowpass);
-                strength.setMax(90);
-                strength.setProgress(0);
-                break;
-            }
-            case 8: {
-                onefiltsetup();
-                Utils.bitmapToMat(inputimage, OpenCVFrame);
-                progresslabel.setText(R.string.ihighpass);
-                strength.setMax(90);
-                strength.setProgress(0);
-                break;
-            }
-            case 9: {
+                //Sets up for Rifting
                 onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.irift);

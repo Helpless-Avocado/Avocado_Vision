@@ -30,13 +30,13 @@
         android:theme="@style/Theme.Opencv2"
         tools:replace="android:theme">
         <activity
-            android:name=".PictureEditActivity"
+            android:name="com.example.opencv2.PictureEditActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".VideoToFrameActivity"
+            android:name="com.example.opencv2.VideoToFrameActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".CameraActivity"
+            android:name="com.example.opencv2.CameraActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
