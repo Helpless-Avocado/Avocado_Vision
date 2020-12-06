@@ -1,6 +1,7 @@
 package com.example.opencv2;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
@@ -8,6 +9,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -31,8 +33,11 @@ import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -62,6 +67,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
     SeekBar strength;
     ImageView imageView;
     private VideoView myVideoView;
+    Button go_back;
 
     //Image Variables
     ArrayList<Bitmap> framesVideo = new ArrayList<>();
@@ -173,6 +179,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                                     stopProcessing();
                                 });
                             }).start();
+                            break;
                         }
                         case 4: {
                             new Thread(() -> {
@@ -315,7 +322,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         // Find the SD Card patH
         File filepath = Environment.getExternalStorageDirectory();
         // Create a new folder in SD Card
-        path = new File(filepath.getAbsolutePath() + "/FilterVideos/");
+        path = new File(filepath.getAbsolutePath() + "/Avocado_Vision/");
         if (!path.exists()) {
             boolean check = path.mkdir();
             if (!check) {
@@ -324,7 +331,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
         }
 
         //Button for returning
-        Button go_back = findViewById(R.id.buttonv);
+        go_back = findViewById(R.id.buttonv);
 
         //Code that will return to the camera/ picture page
         go_back.setOnClickListener(v -> {
@@ -395,14 +402,32 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
             String apath = path.getAbsolutePath();
             frame = framesVideo.get(1);
             String Size = frame.getWidth() + "x" + frame.getHeight();
-            String[] cmd = new String[]{"-y", "-r", "10", "-f", "image2", "-s", Size, "-i", apath + "/frame%d.png", "-crf", "25", "-pix_fmt", "yuv420p", path + "/test.mp4"};
+
+            //Setting up saved video name
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US);
+            Date now = new Date();
+            String newname = formatter.format(now) + ".mp4";
+            String[] cmd = new String[]{"-y", "-r", "10", "-f", "image2", "-s", Size, "-i", apath + "/frame%d.png",
+                    "-crf", "25", "-pix_fmt", "yuv420p", path + "/" + newname};
             FFmpeg.execute(cmd);
 
             runOnUiThread(() -> {
-                myVideoView.setVideoURI(Uri.parse(Uri.encode(path + "/test.mp4")));
+                myVideoView.setVideoURI(Uri.parse(Uri.encode(path + "/" + newname)));
+                go_back.setText(R.string.Return);
+                savetogallery(path + "/" + newname, newname);
+                Toast.makeText(getApplicationContext(), "Video Saved to: " + path, Toast.LENGTH_SHORT).show();
                 stopFFProcessing();
             });
         }).start();
+    }
+
+    //Code to link the video with the gallery
+    public void savetogallery(String filepath, String name) {
+        ContentValues values = new ContentValues(3);
+        values.put(MediaStore.Video.Media.TITLE, name);
+        values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+        values.put(MediaStore.Video.Media.DATA, filepath);
+        getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
     }
 
     //Function that initializes loading screen , pauses video

@@ -33,10 +33,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -914,6 +915,9 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
 
         //Code that saves the image to the file, and adds it to the picture gallery.
         save.setOnClickListener(v -> {
+            //Update button text for return
+            go_back.setText(R.string.Return);
+
             //Store the bitmap in the image gallery
             OutputStream output;
 
@@ -921,7 +925,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
             File filepath = Environment.getExternalStorageDirectory();
 
             // Create a new folder in SD Card
-            File path = new File(filepath.getAbsolutePath() + "/FilterImages/");
+            File path = new File(filepath.getAbsolutePath() + "/Avocado_Vision/");
             if (!path.exists()) {
                 boolean check = path.mkdir();
                 if (!check) {
@@ -930,9 +934,10 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
             }
 
             // Create a name for the saved image and save to gallery
-            Date currentTime = Calendar.getInstance().getTime();
-            String newfilename = currentTime.toString();
-            File file = new File(path, newfilename + ".png");
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US);
+            Date now = new Date();
+            String newname = formatter.format(now) + ".png";
+            File file = new File(path, newname);
 
             //If successfully saved, shows filepath, otherwise shows error
             try {
