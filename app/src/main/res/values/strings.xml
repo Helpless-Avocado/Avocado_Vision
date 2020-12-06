@@ -16,6 +16,8 @@
     <string name="idilation">Dilation Factor: 1</string>
     <string name="iblur">Blur Strength: 0</string>
     <string name="irift">Rift Magnitude: 1</string>
+    <string name="ihighpass">High Pass Radius: 10</string>
+    <string name="ilowpass">Low Pass Radius: 10</string>
     <string name="please_wait">Please Wait</string>
     <string name="ffproc">FFMPEG Processing</string>
     <string name="video">Video</string>
