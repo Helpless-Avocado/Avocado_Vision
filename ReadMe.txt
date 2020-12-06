@@ -1,7 +1,7 @@
 This is the EC327 Project Submission for Team Helpless Avocado
 
 The Team Members are :
-	Luca Giudi
+	Luca Guidi
 	Linglong Le
 	Alexander Mackanic
 	Aidan McCall
