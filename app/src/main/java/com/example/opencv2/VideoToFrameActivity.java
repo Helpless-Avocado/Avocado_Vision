@@ -414,7 +414,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
             FFmpeg.execute(cmd);
 
             runOnUiThread(() -> {
-                myVideoView.setVideoURI(Uri.parse(Uri.encode(path + "/" + newname)));
+                myVideoView.setVideoURI(Uri.parse(path + "/" + newname));
                 go_back.setText(R.string.Return);
                 savetogallery(path + "/" + newname, newname);
                 Toast.makeText(getApplicationContext(), "Video Saved to: " + path, Toast.LENGTH_SHORT).show();
