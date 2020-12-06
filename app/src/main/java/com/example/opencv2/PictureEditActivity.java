@@ -86,7 +86,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         @SuppressLint("SetTextI18n")
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            // updated continuously as the user slides the thumb
+            // updated continuously as the user slides the thumb, updates text
             if (processing == 0) {
                 switch (filter_pos) {
                     case 1: {
@@ -550,12 +550,14 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         return newbit;
     }
 
-    //Code to initialize it so that OPEN CV works
+    // Code to initialize it so that OPEN CV works
     // For some reason, OPENCV only works after something goes through all the pixels in a bitmap
     public static Bitmap reset(Bitmap orig) {
         int width = orig.getWidth();
         int height = orig.getHeight();
         int pixvalue;
+
+        //Simply creating a dummy bitmap, and copying contents over pixel by pixel
         Bitmap newbit = Bitmap.createBitmap(width, height, orig.getConfig());
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
@@ -569,6 +571,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
     //Rift Function Written by Aidan
     public static Mat rift(Mat img, int mag) {
 
+        //Create a list to hold image channels
         List<Mat> chans = new ArrayList<>();
 
         //split the channels in order to manipulate them
@@ -834,6 +837,8 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.picture_main);
 
+        setTitle("Edit photo");
+
         //Resetting Reset
         reset = 0;
 
@@ -948,7 +953,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
         });
     }
 
-    //Function that sets up 1 filter view
+    //Function that sets up layout for when only 1 progress bar is visible
     public void onefiltsetup() {
         progresslabel.setVisibility(View.VISIBLE);
         strength.setVisibility(View.VISIBLE);
@@ -1020,6 +1025,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 break;
             }
             case 4: {
+                //Sets up for Erosion
                 onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.iexpansion);
@@ -1029,6 +1035,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 break;
             }
             case 5: {
+                //Sets up for Dilation
                 onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.idilation);
@@ -1037,6 +1044,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
                 break;
             }
             case 6: {
+                //Sets up for Blurring
                 onefiltsetup();
                 Utils.bitmapToMat(inputimage, OpenCVFrame);
                 progresslabel.setText(R.string.iblur);
