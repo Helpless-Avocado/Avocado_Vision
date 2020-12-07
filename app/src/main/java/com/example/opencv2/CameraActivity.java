@@ -38,7 +38,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     private static final int VIDEO_REQUEST = 102;
     private android.net.Uri videoUri = null;
 
-    //Auxilary varaibles
+    //Auxiliary variables
     String[] colors = {"Filter Select", "Normal", "Grey Scale", "Jet", "Ocean", "Spring", "Parula", "Cool", "Twilight"};
     int color_selected;
     int pic_taken = 0;
@@ -248,8 +248,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     public void onNothingSelected(AdapterView<?> parent) {
         color_selected = 0;
     }
-
-
+    
     //when button is clicked built-in camera interface is opened
     public void takeVideo (View view) {
         cameraBridgeViewBase.disableView();

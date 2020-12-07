@@ -7,6 +7,8 @@ The Team Members are:
 	Alexander Mackanic
 	Aidan McCall
 
+The Github can be found here: https://github.com/Helpless-Avocado/Final_Project
+
 Regarding External Libraries:
 
     For this Project, 2 External Libraries are required:
@@ -20,7 +22,7 @@ Regarding External Libraries:
     For enabling FFMPEG, simply add the line:
         implementation 'com.arthenica:mobile-ffmpeg-video:3.0'
     Into the build.gradle underneath dependencies. Version 3.0 was used as it supported a minSDK
-    of 23, but higher versions will also work with this project
+    of 23, but higher versions will also work with this project.
 
 Running this Project:
 

@@ -128,6 +128,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                         //Sets up the loading / progress bar, creates threads to run specific filters
                         //Then once done running progress bar dissappears and video ready
                         case 1: {
+                            //Apply erosion filter
                             new Thread(() -> {
                                 Mat kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
                                 for (int i = 0; i < framesVideo.size(); i++) {
@@ -146,6 +147,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                             break;
                         }
                         case 2: {
+                            //Apply dilation filter
                             new Thread(() -> {
                                 Mat kernel = Mat.ones(filter_strength, filter_strength, CvType.CV_8UC1);
                                 for (int i = 0; i < framesVideo.size(); i++) {
@@ -164,6 +166,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                             break;
                         }
                         case 3: {
+                            //Apply blurring filter
                             new Thread(() -> {
                                 Size size = new Size(filter_strength, filter_strength);
                                 for (int i = 0; i < framesVideo.size(); i++) {
@@ -182,6 +185,7 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
                             break;
                         }
                         case 4: {
+                            //Apply Rifting
                             new Thread(() -> {
                                 for (int i = 0; i < framesVideo.size(); i++) {
                                     frame = framesVideo.get(i);
@@ -411,8 +415,11 @@ public class VideoToFrameActivity extends AppCompatActivity implements AdapterVi
             String newname = formatter.format(now) + ".mp4";
             String[] cmd = new String[]{"-y", "-r", "10", "-f", "image2", "-s", Size, "-i", apath + "/frame%d.png",
                     "-crf", "25", "-pix_fmt", "yuv420p", path + "/" + newname};
+
+            //Use FFMPEG to compile the bitmaps together
             FFmpeg.execute(cmd);
 
+            //Runs and updates UI once finished compilation, and plays video
             runOnUiThread(() -> {
                 myVideoView.setVideoURI(Uri.parse(path + "/" + newname));
                 go_back.setText(R.string.Return);

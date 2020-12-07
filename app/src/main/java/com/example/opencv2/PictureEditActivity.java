@@ -744,7 +744,7 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
             //Loop through the planes
             for (int j = 0; j < 2; j++) {
                 fftshift(planes.get(j));                // rearrange so low frequencies are centered
-                planes.set(j, planes.get(j).mul(mask));  // apply mask: only use values inside/outside radius defined above
+                planes.set(j, planes.get(j).mul(mask));  // apply mask: only use values outside radius defined above
                 fftshift(planes.get(j));                // rearrange back
             }
 
@@ -799,13 +799,8 @@ public class PictureEditActivity extends AppCompatActivity implements AdapterVie
 
             //Loop through the planes
             for (int j = 0; j < 2; j++) {
-//                Mat size = new Mat(planes.get(j).cols() & -2, planes.get(j).rows() & -2, planes.get(j).type());
-//                planes.set(j, size);
                 fftshift(planes.get(j));                // rearrange so low frequencies are centered
-//                resize(mask, mask, planes.get(j).size());
-//                mask.convertTo(mask, CvType.CV_32FC1);
-//                planes.get(j).convertTo(planes.get(j), CvType.CV_32FC1);
-                planes.set(j, planes.get(j).mul(mask));  // apply mask: only use values inside/outside radius defined above
+                planes.set(j, planes.get(j).mul(mask));  // apply mask: only use values inside radius defined above
                 fftshift(planes.get(j));                // rearrange back
             }
 
